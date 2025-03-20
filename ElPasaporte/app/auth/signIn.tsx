@@ -3,26 +3,19 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-nativ
 import { AuthContext } from "../../context/authContext/authContext";
 import { useRouter } from "expo-router";
 
-const SignupScreen = () => {
-  const { register, setError, error } = useContext(AuthContext) ?? {};
+const signIn = () => {
+  const { login, error } = useContext(AuthContext)!;
   const router = useRouter();
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const handleRegister = async () => {
-    if (!register || !setError) return;
-    if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden");
-      return;
-    }
-    await register(email, password);
-  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Crear Cuenta</Text>
+      <Text style={styles.title}>Acceso al Sistema POS</Text>
+
       {error ? <Text style={styles.error}>{error}</Text> : null}
+
       <TextInput
         style={styles.input}
         placeholder="Correo electrónico"
@@ -32,6 +25,7 @@ const SignupScreen = () => {
         keyboardType="email-address"
         autoCapitalize="none"
       />
+
       <TextInput
         style={styles.input}
         placeholder="Contraseña"
@@ -40,70 +34,65 @@ const SignupScreen = () => {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Confirmar contraseña"
-        placeholderTextColor="#ccc"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-      />
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Registrarse</Text>
+
+      <TouchableOpacity style={styles.button} onPress={() => login(email, password)}>
+        <Text style={styles.buttonText}>Iniciar Sesión</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/auth/signIn")}>
-        <Text style={styles.link}>¿Ya tienes cuenta? Inicia sesión</Text>
+
+      <TouchableOpacity style={styles.link} onPress={() => router.push("/auth/signUp") }>
+        <Text style={styles.linkText}>¿No tienes cuenta? Regístrate</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
+export default signIn;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#1E1E2D", // Fondo negro
     padding: 20,
+    backgroundColor: "#1E1E2D", // Fondo oscuro
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
+    color: "#F8F8F8",
     marginBottom: 20,
-    color: "#fff", // Texto blanco
   },
   input: {
     width: "100%",
-    height: 50,
+    padding: 12,
     borderWidth: 1,
-    borderColor: "#555",
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    backgroundColor: "#222", // Fondo oscuro para inputs
-    color: "#fff", // Texto blanco
+    borderColor: "#575757",
+    borderRadius: 8,
     marginBottom: 15,
+    backgroundColor: "#222",
+    color: "#FFF",
   },
   button: {
-    width: "100%",
-    height: 50,
     backgroundColor: "#FFAA00", // Amarillo POS
-    justifyContent: "center",
+    padding: 12,
+    borderRadius: 8,
+    width: "100%",
     alignItems: "center",
-    borderRadius: 10,
   },
   buttonText: {
-    color: "#000", // Texto negro en el botón
-    fontSize: 16,
+    color: "#1E1E2D",
     fontWeight: "bold",
+    fontSize: 16,
   },
   link: {
-    marginTop: 15,
-    color: "#FFC107", // Amarillo POS para el link
+    marginTop: 10,
+  },
+  linkText: {
+    color: "#FFAA00",
+    fontSize: 16,
   },
   error: {
     color: "red",
     marginBottom: 10,
   },
 });
-
-export default SignupScreen;
