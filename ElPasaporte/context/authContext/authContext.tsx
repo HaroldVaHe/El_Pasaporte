@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }:any) => {
           const response = await signInWithEmailAndPassword(auth, email, password);
           console.log({ response: response.user });
           if (response.user) {
-            router.push("/app/(app)");
+            router.push("../app/(app)");
           }
         } catch (error: any) {
           console.log("Error Login: ", error.message);
