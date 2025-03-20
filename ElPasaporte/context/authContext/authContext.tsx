@@ -7,7 +7,7 @@ import { User } from "@/interfaces/common";
 interface AuthContextProps {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
-  updateRole: (role: string) => void;
+  updateRole: (role: "client" | "chef" | "cashier") => void;
   logout: () => Promise<void>;
   user: User | null;
   error: string;
@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState<"client" | "chef" | "cashier" | null>("client");
 
   const login = async (email: string, password: string) => {
     try {
@@ -34,7 +34,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await signInWithEmailAndPassword(auth, email, password);
       console.log({ response: response.user });
       if (response.user) {
-        setUser(response.user as User);
+        setUser({
+          email: response.user.email || "",
+          name: "", // Add default or fetched value
+          password: "", // Add default or fetched value
+          role: role as "client" | "chef" | "cashier", // Ensure role matches the expected type
+        });
         router.push("../app/(app)");
       }
     } catch (error: any) {
@@ -49,7 +54,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await createUserWithEmailAndPassword(auth, email, password);
       console.log({ response: response.user });
       if (response.user) {
-        setUser(response.user as User);
+        setUser({
+          email: response.user.email || "",
+          name: "", // Provide a default or fetched value for name
+          password: "", // Provide a default or fetched value for password
+          role: role as "client" | "chef" | "cashier", // Ensure role matches the expected type
+        });
         router.push("/auth");
       }
     } catch (error: any) {
@@ -58,15 +68,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateRole = (role: string) => {
-    setRole(role);
+  const updateRole = (role: "client" | "chef" | "cashier") => {
+      setRole(role);
   };
 
   const logout = async () => {
     try {
       await signOut(auth);
       setUser(null);
-      setRole("");
+      setRole(null);
       router.replace("/");
     } catch (error) {
       console.error("Error al cerrar sesión: ", error);
@@ -83,11 +93,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         user,
         error,
-        role,
+        role: role || "client",
         setEmail,
         setPassword,
         setError,
-        setRole,
+        setRole: (role: string) => setRole(role as "client" | "chef" | "cashier" | null),
       }}
     >
       {children}
