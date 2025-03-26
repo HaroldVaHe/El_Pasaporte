@@ -9,6 +9,9 @@ const SignupScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [userType, setUserType] = useState<"Usuario" | "Otro">("Usuario");
+  const [specialPassword, setSpecialPassword] = useState("");
+  const SPECIAL_KEY = "ClaveSecreta123"; // Cambia esto a la clave que desees
 
   const handleRegister = async () => {
     if (!register || !setError) return;
@@ -16,8 +19,17 @@ const SignupScreen = () => {
       setError("Las contraseñas no coinciden");
       return;
     }
+    if (userType === "Otro" && specialPassword !== SPECIAL_KEY) {
+      setError("Contraseña de autorización incorrecta");
+      return;
+    }
     await register(email, password);
+    
+    if (userType === "Usuario") {
+      router.push("../homScreen"); // Redirige a HomeScreen solo si es "Usuario"
+    }
   };
+  
 
   return (
     <View style={styles.container}>
@@ -48,6 +60,38 @@ const SignupScreen = () => {
         onChangeText={setConfirmPassword}
         secureTextEntry
       />
+
+      {/* Radio Buttons */}
+      <View style={styles.radioContainer}>
+        <TouchableOpacity
+          style={styles.radioButton}
+          onPress={() => setUserType("Usuario")}
+        >
+          <View style={[styles.radioCircle, userType === "Usuario" && styles.radioSelected]} />
+          <Text style={styles.radioText}>Usuario</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.radioButton}
+          onPress={() => setUserType("Otro")}
+        >
+          <View style={[styles.radioCircle, userType === "Otro" && styles.radioSelected]} />
+          <Text style={styles.radioText}>Otro</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Input adicional si el usuario selecciona "Otro" */}
+      {userType === "Otro" && (
+        <TextInput
+          style={styles.input}
+          placeholder="Contraseña especial"
+          placeholderTextColor="#ccc"
+          value={specialPassword}
+          onChangeText={setSpecialPassword}
+          secureTextEntry
+        />
+      )}
+
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Registrarse</Text>
       </TouchableOpacity>
@@ -63,14 +107,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#1E1E2D", // Fondo negro
+    backgroundColor: "#1E1E2D",
     padding: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
-    color: "#fff", // Texto blanco
+    color: "#fff",
   },
   input: {
     width: "100%",
@@ -79,30 +123,60 @@ const styles = StyleSheet.create({
     borderColor: "#555",
     borderRadius: 10,
     paddingHorizontal: 15,
-    backgroundColor: "#222", // Fondo oscuro para inputs
-    color: "#fff", // Texto blanco
+    backgroundColor: "#222",
+    color: "#fff",
     marginBottom: 15,
   },
   button: {
     width: "100%",
     height: 50,
-    backgroundColor: "#FFAA00", // Amarillo POS
+    backgroundColor: "#FFAA00",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 10,
   },
   buttonText: {
-    color: "#000", // Texto negro en el botón
+    color: "#000",
     fontSize: 16,
     fontWeight: "bold",
   },
   link: {
     marginTop: 15,
-    color: "#FFC107", // Amarillo POS para el link
+    color: "#FFC107",
   },
   error: {
     color: "red",
     marginBottom: 10,
+  },
+  radioContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  radioButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 20,
+  },
+  radioCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#FFC107",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+  radioSelected: {
+    backgroundColor: "#FFC107",
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  radioText: {
+    color: "#fff",
   },
 });
 
