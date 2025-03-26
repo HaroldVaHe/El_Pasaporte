@@ -59,41 +59,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (user: { name: string; email: string; password: string; role: "client" | "chef" | "cashier" }) => {
-    try {
-      setError(""); // Resetear error antes del intento de registro
-      const response = await createUserWithEmailAndPassword(auth, user.email, user.password);
-      const firebaseUser = response.user;
-      await updateProfile(firebaseUser, { displayName: user.name });
+  const register = async (user: any) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
+    const firebaseUser = userCredential.user;
+    await updateProfile(firebaseUser, { displayName: user.name });
 
-      await setDoc(doc(db, "users", firebaseUser.uid), {
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          createdAt: new Date()
-      });
-      console.log({ response: response.user });
-      if (response.user) {
-        setUser({
-          email: user.email,
-          name: user.name,
-          password: "", // No se debe almacenar la contraseña en el contexto por seguridad
-          role: user.role,
-        });
-        router.push("/auth");
+    await setDoc(doc(db, "users", firebaseUser.uid), {
+        name: user.name,
+        email: user.email,
+        role: user.role || "client",
+        createdAt: new Date()
+    });
+};
+
+
+  const updateRole = async (role: "client" | "chef" | "cashier") => {
+    try {
+      if (auth.currentUser) {
+        await setDoc(doc(db, "users", auth.currentUser.uid), { role }, { merge: true });
       }
-    } catch (error: any) {
-      console.error("Error Registro: ", error.message);
-      setError("Error al registrarse");
+    } catch (error) {
+      console.error("Error al actualizar rol: ", error);
+      setError("Error al actualizar rol");
     }
   };
-
-
-    const updateRole = async (role: "client" | "chef" | "cashier") => {
-        if (auth.currentUser) {
-            await setDoc(doc(db, "users", auth.currentUser.uid), { role }, { merge: true });
-        }
-    };
 
   const logout = async () => {
     try {

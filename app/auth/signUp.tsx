@@ -11,7 +11,9 @@ const SignupScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [userType, setUserType] = useState<"client" | "Otro">("client");
   const [specialPassword, setSpecialPassword] = useState("");
-  const SPECIAL_KEY = "ClaveSecreta123"; // Cambia esto a la clave que desees
+
+  const SPECIAL_KEY_CHEF = "Chefsito123";
+  const SPECIAL_KEY_CASHIER = "Cashier123";
 
   const handleRegister = async () => {
     if (!register || !setError) return;
@@ -19,23 +21,37 @@ const SignupScreen = () => {
       setError("Las contraseñas no coinciden");
       return;
     }
-    if (userType === "Otro" && specialPassword !== SPECIAL_KEY) {
-      setError("Contraseña de autorización incorrecta");
-      return;
-    }
-    const role = userType === "client" ? "client" : "chef"; // Map "Otro" to "chef" or another valid role
-    if (userType === "client") {
-      const role = userType === "client" ? "client" : "chef"; // Map "Otro" to "chef" or another valid role
-      await register({
-        name: email.split("@")[0], // Tomar el nombre a partir del email (puedes modificarlo si necesitas un campo de nombre explícito)
-        email,
-        password,
-        role,
-      });
-      if (userType === "client") {
-        router.push("../homScreen"); // Redirige a HomeScreen solo si es "Usuario"
+    let role: "client" | "chef" | "cashier" = "client";
+    if (userType === "Otro") {
+      if (specialPassword === SPECIAL_KEY_CHEF) {
+        role = "chef";
+      } else if (specialPassword === SPECIAL_KEY_CASHIER) {
+        role = "cashier";
+      } else {
+        setError("Contraseña de autorización incorrecta");
+        return;
       }
-    };
+    }
+    await register({
+      name: email.split("@")[0], // Tomar el nombre a partir del email (puedes modificarlo si necesitas un campo de nombre explícito)
+      email,
+      password,
+      role,
+    });
+    switch (role) {
+      case "client":
+        router.push("../user/homeScreen");
+        break;
+      case "chef":
+        router.push("../chef/homeScreen");
+        break;
+      case "cashier":
+        router.push("../cashier/homeScreen");
+        break;
+      default:
+        setError("Rol no válido");
+    }
+  };
     const styles = StyleSheet.create({
       container: {
         flex: 1,
@@ -187,7 +203,7 @@ const SignupScreen = () => {
       </View>
     );
   }
-};
+;
 
 
 
