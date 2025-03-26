@@ -1,13 +1,16 @@
-import { createContext, ReactNode, useState } from "react";
-import { auth } from '../../utils/FirebaseConfig';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createContext, ReactNode, useEffect, useState } from "react";
+import { auth, db } from '../../utils/FirebaseConfig';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from "expo-router";
+import { setDoc, doc } from "firebase/firestore";
 import { User } from "@/interfaces/common";
 
 interface AuthContextProps {
+  currentUser: FirebaseUser | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (user: { name: string; email: string; password: string; role: "client" | "chef" | "cashier" }) => Promise<void>;
   updateRole: (role: "client" | "chef" | "cashier") => void;
+  updateUser: (user: any) => Promise<void>
   logout: () => Promise<void>;
   user: User | null;
   error: string;
@@ -21,12 +24,20 @@ interface AuthContextProps {
 export const AuthContext = createContext<AuthContextProps | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [role, setRole] = useState<"client" | "chef" | "cashier" | null>("client");
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user: any) => {
+        setCurrentUser(user);
+    });
+    return () => unsubscribe();
+}, []);
 
   const login = async (email: string, password: string) => {
     try {
@@ -48,17 +59,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (email: string, password: string) => {
+  const register = async (user: { name: string; email: string; password: string; role: "client" | "chef" | "cashier" }) => {
     try {
       setError(""); // Resetear error antes del intento de registro
-      const response = await createUserWithEmailAndPassword(auth, email, password);
+      const response = await createUserWithEmailAndPassword(auth, user.email, user.password);
+      const firebaseUser = response.user;
+      await updateProfile(firebaseUser, { displayName: user.name });
+
+      await setDoc(doc(db, "users", firebaseUser.uid), {
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          createdAt: new Date()
+      });
       console.log({ response: response.user });
       if (response.user) {
         setUser({
-          email: response.user.email || "",
-          name: "", // Provide a default or fetched value for name
-          password: "", // Provide a default or fetched value for password
-          role: role as "client" | "chef" | "cashier", // Ensure role matches the expected type
+          email: user.email,
+          name: user.name,
+          password: "", // No se debe almacenar la contraseña en el contexto por seguridad
+          role: user.role,
         });
         router.push("/auth");
       }
@@ -68,9 +88,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateRole = (role: "client" | "chef" | "cashier") => {
-      setRole(role);
-  };
+
+    const updateRole = async (role: "client" | "chef" | "cashier") => {
+        if (auth.currentUser) {
+            await setDoc(doc(db, "users", auth.currentUser.uid), { role }, { merge: true });
+        }
+    };
 
   const logout = async () => {
     try {
@@ -84,9 +107,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateUser = async (user: User) => {
+    try {
+      if (auth.currentUser) {
+        await updateProfile(auth.currentUser, { displayName: user.name });
+        await setDoc(doc(db, "users", auth.currentUser.uid), user, { merge: true });
+    }
+    } catch (error) {
+      console.error("Error al actualizar usuario: ", error);
+      setError("Error al actualizar usuario");
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
+        currentUser,
+        updateUser,
         login,
         register,
         updateRole,

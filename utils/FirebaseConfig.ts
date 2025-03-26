@@ -3,6 +3,7 @@ import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
 // import { getFirestore } from 'firebase/firestore/lite';
 import { initializeAuth, indexedDBLocalPersistence } from 'firebase/auth';
+import { getFirestore } from "firebase/firestore";
 // import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -24,7 +25,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// export const db = getFirestore(app);
+export const db = getFirestore(app);
 // Inicializar Analytics solo en el navegador
 let analytics;
 if (typeof window !== "undefined") {
