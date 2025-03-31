@@ -32,7 +32,13 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-camera",
+      {
+        "cameraPermission": "Permite $(PRODUCT_NAME) para acceder a tu cámara",
+        "microphonePermission": "Permite $(PRODUCT_NAME) para acceder a tu micrófono",
+        "recordAudioAndroid": true
+      }
     ],
     "experiments": {
       "typedRoutes": true
