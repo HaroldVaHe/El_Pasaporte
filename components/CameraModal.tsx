@@ -3,9 +3,11 @@ import React, { useRef, useState } from 'react'
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 
-interface CameraModalProps {
+ export interface CameraModalProps {
     isVisible: boolean;
     image?: any;
+    onClose: () => void;
+    setImage: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
 export default function CameraModal(props: CameraModalProps) {
