@@ -31,7 +31,7 @@ export default function DishCRUD() {
                     <Image source={{ uri: image }} style={{ width: 100, height: 100, marginBottom: 10 }} />
                 </TouchableOpacity>
             ) : (
-                <TouchableOpacity onPress={() => setIsVisible(true)}>
+                <TouchableOpacity onPress={() => setIsVisible(true)} style={{ alignItems: 'center' }}>
                     <Entypo name="camera" size={24} color="white" />
                 </TouchableOpacity>
             )}

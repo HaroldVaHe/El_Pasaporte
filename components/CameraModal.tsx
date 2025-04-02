@@ -2,6 +2,7 @@ import { View, Text, Modal, TouchableOpacity } from 'react-native'
 import React, { useRef, useState } from 'react'
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
+import { supabase } from '@/utils/supabase';
 
  export interface CameraModalProps {
     isVisible: boolean;
