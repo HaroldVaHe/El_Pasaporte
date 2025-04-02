@@ -58,6 +58,9 @@ const HomeScreen = () => {
       <TouchableOpacity style={styles.button} onPress={() => router.push("/auth/signIn")}>
         <Text style={styles.buttonText}>Registrar Pedido 🍽️</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => router.push("../menu/")}>
+        <Text style={styles.buttonText}>Registrar Plato 🍽️</Text>
+      </TouchableOpacity>
     </View>
   );
 };
