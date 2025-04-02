@@ -51,7 +51,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           password: "", // Add default or fetched value
           role: role as "client" | "chef" | "cashier", // Ensure role matches the expected type
         });
-        router.push("../app/(app)");
+        switch (role) {
+          case 'client':
+            router.push('../user/homeScreen');
+            break;
+          case 'chef':
+            router.push('../chef/homeScreen');
+            break;
+          case 'cashier':
+            router.push('../cashier/homeScreen');
+            break;
+        }
       }
     } catch (error: any) {
       console.error("Error Login: ", error.message);
