@@ -2,12 +2,37 @@ import { View, Text, Modal, TouchableOpacity } from 'react-native'
 import React, { useRef, useState } from 'react'
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
+import { supabase } from '@/utils/supabase';
 
-interface CameraModalProps {
+ export interface CameraModalProps {
     isVisible: boolean;
     image?: any;
+    onClose: () => void;
+    setImage: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
+const uploadImage = async (uri: string) => {
+    try {
+        const response = await fetch(uri);
+        const blob = await response.blob();
 
+        const fileName = `images/${Date.now()}.jpg`;
+
+        const { data, error } = await supabase.storage
+            .from('dish.image') // Reemplaza con el nombre de tu bucket en Supabase
+            .upload(fileName, blob, {
+                contentType: 'image/jpeg',
+            });
+
+        if (error) {
+            console.error('Error subiendo la imagen:', error);
+            return;
+        }
+
+        console.log('Imagen subida:', data);
+    } catch (error) {
+        console.error('Error en la subida:', error);
+    }
+};
 export default function CameraModal(props: CameraModalProps) {
 
     const [facing, setFacing] = useState<CameraType>('back');
@@ -19,29 +44,35 @@ export default function CameraModal(props: CameraModalProps) {
     }
 
     const take = async () => {
-        let result = await cameraRef.current?.takePictureAsync({
-            quality:1,
+        if (!cameraRef.current) return;
+    
+        let result = await cameraRef.current.takePictureAsync({
+            quality: 1,
             base64: true,
         });
-
-        if(result){
-           // setImage(result.assets[0].uri);
+    
+        if (result) {
+            await uploadImage(result.uri);
         }
-    }
+    };
+    
     const open = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images', 'videos'],
+            mediaTypes: ImagePicker.MediaTypeOptions.Images, // Solo imágenes
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
         });
-
-        console.log(result);
-
-        if (!result.canceled) {
-            // setImage(result.assets[0].uri);
+    
+        if (!result.canceled && result.assets.length > 0) {
+            const imageUri = result.assets[0].uri;
+            props.setImage(imageUri); // Muestra la imagen seleccionada en la UI
+    
+            await uploadImage(imageUri); // Sube la imagen a Supabase
         }
-    }
+    };
+    
+    
 
     if (!permission) {
         // Camera permissions are still loading.
@@ -77,11 +108,10 @@ export default function CameraModal(props: CameraModalProps) {
                     <View style={{
                         flexDirection: "row"
                     }}>
-                        <TouchableOpacity
-                            onPress={take}
-                        >
-                            <Text>Take a photo</Text>
+                        <TouchableOpacity onPress={take}>
+                        <Text>Take a photo</Text>
                         </TouchableOpacity>
+
                         <TouchableOpacity
                             onPress={open}
                         >
@@ -99,5 +129,5 @@ export default function CameraModal(props: CameraModalProps) {
                 </CameraView>
             </View>
         </Modal>
-    )
+    )
 }
