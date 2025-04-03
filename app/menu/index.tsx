@@ -1,7 +1,8 @@
-import { View, Text, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Image, Alert } from 'react-native';
 import React, { useState } from 'react';
 import Entypo from '@expo/vector-icons/Entypo';
 import CameraModal from '@/components/CameraModal';
+import { addDish } from '@/app/services/CRUD/dishesCRUD'; // Importamos la función para guardar en Firebase
 
 export default function DishCRUD() {
     const [title, setTitle] = useState('');
@@ -10,13 +11,28 @@ export default function DishCRUD() {
     const [image, setImage] = useState<string | undefined>(undefined);
     const [isVisible, setIsVisible] = useState(false);
 
-    const handleSave = () => {
-        // Lógica para guardar el plato
-        console.log({ title, price, description, image });
+    const handleSave = async () => {
+        if (!title || !price || !description) {
+            Alert.alert("Error", "Todos los campos son obligatorios.");
+            return;
+        }
+
+        try {
+            const newDishId = await addDish(title, parseFloat(price), description);
+            if (newDishId) {
+                Alert.alert("Éxito", "Platillo guardado correctamente.");
+                setTitle('');
+                setPrice('');
+                setDescription('');
+                setImage(undefined);
+            }
+        } catch (error) {
+            Alert.alert("Error", "No se pudo guardar el platillo. Intenta de nuevo.");
+            console.error(error);
+        }
     };
 
     const handleDelete = () => {
-        // Lógica para eliminar el plato
         setTitle('');
         setPrice('');
         setDescription('');
@@ -41,7 +57,7 @@ export default function DishCRUD() {
                 placeholder="Título" 
                 value={title} 
                 onChangeText={setTitle} 
-                style={{ borderBottomWidth: 1, marginBottom: 10 , color: '#FFF'}} 
+                style={{ borderBottomWidth: 1, marginBottom: 10, color: '#FFF' }} 
             />
             <TextInput 
                 placeholder="Precio" 
