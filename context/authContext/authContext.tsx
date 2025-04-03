@@ -2,7 +2,7 @@ import { createContext, ReactNode, useEffect, useState } from "react";
 import { auth, db } from '../../utils/FirebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from "expo-router";
-import { setDoc, doc } from "firebase/firestore";
+import { setDoc, doc, getDoc } from "firebase/firestore";
 import { User } from "@/interfaces/common";
 
 interface AuthContextProps {
@@ -34,24 +34,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [role, setRole] = useState<"client" | "chef" | "cashier" | null>("client");
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user: any) => {
-        setCurrentUser(user);
+      setCurrentUser(user);
     });
     return () => unsubscribe();
-}, []);
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setError(""); // Resetear error antes del intento de login
       const response = await signInWithEmailAndPassword(auth, email, password);
-      console.log({ response: response.user });
+
       if (response.user) {
-        setUser({
-          email: response.user.email || "",
-          name: "", // Add default or fetched value
-          password: "", // Add default or fetched value
-          role: role as "client" | "chef" | "cashier", // Ensure role matches the expected type
-        });
-        router.push("../app/(app)");
+        // Obtener el documento del usuario en Firestore
+        const userDocRef = doc(db, "users", response.user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setRole(userData.role as "client" | "chef" | "cashier");
+          setUser({
+            email: response.user.email || "",
+            name: userData.name || "",
+            password: "", // No se almacena la contraseña por seguridad
+            role: userData.role as "client" | "chef" | "cashier",
+          });
+
+          // Redirigir según el rol
+          switch (userData.role) {
+            case "client":
+              router.push("../user/homeScreen");
+              break;
+            case "chef":
+              router.push("../chef/homeScreen");
+              break;
+            case "cashier":
+              router.push("../cashier/homeScreen");
+              break;
+            default:
+              setError("Rol no válido");
+          }
+        } else {
+          setError("No se encontró información del usuario");
+        }
       }
     } catch (error: any) {
       console.error("Error Login: ", error.message);
@@ -65,12 +89,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await updateProfile(firebaseUser, { displayName: user.name });
 
     await setDoc(doc(db, "users", firebaseUser.uid), {
-        name: user.name,
-        email: user.email,
-        role: user.role || "client",
-        createdAt: new Date()
+      name: user.name,
+      email: user.email,
+      role: user.role || "client",
+      createdAt: new Date()
     });
-};
+  };
 
 
   const updateRole = async (role: "client" | "chef" | "cashier") => {
@@ -101,7 +125,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (auth.currentUser) {
         await updateProfile(auth.currentUser, { displayName: user.name });
         await setDoc(doc(db, "users", auth.currentUser.uid), user, { merge: true });
-    }
+      }
     } catch (error) {
       console.error("Error al actualizar usuario: ", error);
       setError("Error al actualizar usuario");

@@ -58,16 +58,20 @@ export default function CameraModal(props: CameraModalProps) {
     
     const open = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ImagePicker.MediaTypeOptions.Images, // Solo imágenes
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
         });
     
         if (!result.canceled && result.assets.length > 0) {
-            await uploadImage(result.assets[0].uri);
+            const imageUri = result.assets[0].uri;
+            props.setImage(imageUri); // Muestra la imagen seleccionada en la UI
+    
+            await uploadImage(imageUri); // Sube la imagen a Supabase
         }
     };
+    
     
 
     if (!permission) {
@@ -125,5 +129,5 @@ export default function CameraModal(props: CameraModalProps) {
                 </CameraView>
             </View>
         </Modal>
-    )
+    )
 }
