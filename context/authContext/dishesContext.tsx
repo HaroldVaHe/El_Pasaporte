@@ -13,7 +13,7 @@ interface Dish {
 interface DishesContextType {
     dishes: Dish[];
     fetchDishes: () => Promise<void>;
-    addNewDish: (title: string, price: number, description: string) => Promise<void>;
+    addNewDish: (title: string, price: number, description: string, category: string) => Promise<void>;
     editDish: (id: string, updatedData: Partial<Dish>) => Promise<void>;
     removeDish: (id: string) => Promise<void>;
 }
@@ -32,10 +32,11 @@ export const DishesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     // Agregar un nuevo platillo
-    const addNewDish = async (title: string, price: number, description: string) => {
-        const newDishId = await addDish(title, price, description);
-        if (newDishId) fetchDishes();  // Refrescar lista
+    const addNewDish = async (title: string, price: number, description: string, category: string) => {
+      const newDishId = await addDish(title, price, description, category);
+      if (newDishId) fetchDishes();
     };
+    
 
     // Editar un platillo
     const editDish = async (id: string, updatedData: Partial<Dish>) => {

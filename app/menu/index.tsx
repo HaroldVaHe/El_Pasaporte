@@ -10,27 +10,31 @@ export default function DishCRUD() {
     const [description, setDescription] = useState('');
     const [image, setImage] = useState<string | undefined>(undefined);
     const [isVisible, setIsVisible] = useState(false);
+    const [category, setCategory] = useState<'entrada' | 'principal' | 'postre' | 'bebida' | ''>('');
+
 
     const handleSave = async () => {
-        if (!title || !price || !description) {
-            Alert.alert("Error", "Todos los campos son obligatorios.");
+        if (!title || !price || !description || !category) {
+            Alert.alert("Error", "Todos los campos son obligatorios, incluyendo la categoría.");
             return;
         }
-
+    
         try {
-            const newDishId = await addDish(title, parseFloat(price), description);
+            const newDishId = await addDish(title, parseFloat(price), description, category);
             if (newDishId) {
                 Alert.alert("Éxito", "Platillo guardado correctamente.");
                 setTitle('');
                 setPrice('');
                 setDescription('');
                 setImage(undefined);
+                setCategory(''); // ¡Resetea también la categoría!
             }
         } catch (error) {
             Alert.alert("Error", "No se pudo guardar el platillo. Intenta de nuevo.");
             console.error(error);
         }
     };
+    
 
     const handleDelete = () => {
         setTitle('');
@@ -82,9 +86,29 @@ export default function DishCRUD() {
             <TouchableOpacity onPress={handleDelete} style={{ backgroundColor: 'red', padding: 10 }}>
                 <Text style={{ color: 'white', textAlign: 'center' }}>Eliminar</Text>
             </TouchableOpacity>
-
+            <Text style={{ color: '#FFF', marginBottom: 5 }}>Categoría:</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 15 }}>
+            {['entrada', 'principal', 'postre', 'bebida'].map((cat) => (
+                <TouchableOpacity
+                key={cat}
+                onPress={() => setCategory(cat as any)}
+                style={{
+                    backgroundColor: category === cat ? '#4CAF50' : '#333',
+                    padding: 10,
+                    borderRadius: 5,
+                    marginRight: 10,
+                    marginBottom: 10
+                }}
+                >
+                <Text style={{ color: '#FFF' }}>{cat}</Text>
+                </TouchableOpacity>
+            ))}
+            </View>
             {/* Modal de Cámara */}
             <CameraModal isVisible={isVisible} setImage={setImage} onClose={() => setIsVisible(false)} />
         </View>
+        
+        
     );
+    
 }

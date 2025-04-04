@@ -11,16 +11,36 @@ interface Dish {
 }
 
 // 🔹 Agregar un platillo
-export const addDish = async (title: string, price: number, description: string) => {
-    try {
-        const docRef = await addDoc(collection(db, DISHES_COLLECTION), { title, price, description });
-        console.log("Platillo agregado con ID:", docRef.id);
-        return docRef.id;
-    } catch (error) {
-        console.error("Error al agregar el platillo:", error);
-    }
-};
+export const addDish = async (title: string, price: number, description: string, category: string) => {
+  try {
+    const [min, max] = getCategoryRange(category);
+    const snapshot = await getDocs(collection(db, DISHES_COLLECTION));
 
+    const usedCodes = snapshot.docs
+      .map(doc => doc.data().codigo)
+      .filter(code => code >= min && code <= max);
+
+    let newCode = min;
+    while (usedCodes.includes(newCode) && newCode <= max) {
+      newCode++;
+    }
+
+    if (newCode > max) throw new Error("Rango de códigos lleno para esta categoría");
+
+    const docRef = await addDoc(collection(db, DISHES_COLLECTION), {
+      title,
+      price,
+      description,
+      category,
+      codigo: newCode,
+    });
+
+    console.log("Platillo agregado con ID:", docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error al agregar el platillo:", error);
+  }
+};
 // 🔹 Obtener todos los platillos
 export const getDishes = async () => {
   try {
@@ -56,4 +76,13 @@ export const deleteDish = async (id: string) => {
     } catch (error) {
         console.error("Error al eliminar el platillo:", error);
     }
+};
+const getCategoryRange = (category: string): [number, number] => {
+  switch (category) {
+    case 'entrada': return [1, 99];
+    case 'principal': return [100, 199];
+    case 'postre': return [200, 299];
+    case 'bebida': return [300, 399];
+    default: return [1, 999];
+  }
 };
