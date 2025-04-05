@@ -8,6 +8,8 @@ interface CartContextType {
   cart: CartItem[];
   addToCart: (dish: Dish, quantity?: number) => void;
   removeFromCart: (id: string) => void;
+  table: number | null;
+  setTable: (table: number) => void;
   total: number;
 }
 
@@ -41,10 +43,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const total = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [cart]);
+  const [table, setTable] = useState<number | null>(null);
 
-  return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, total }}>
-      {children}
-    </CartContext.Provider>
-  );
+return (
+  <CartContext.Provider value={{ cart, addToCart, removeFromCart, total, table, setTable }}>
+    {children}
+  </CartContext.Provider>
+);
+
 };

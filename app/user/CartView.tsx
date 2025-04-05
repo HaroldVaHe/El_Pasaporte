@@ -11,7 +11,7 @@ import { useCart } from "@/context/authContext/cartContext";
 import { useRouter } from "expo-router";
 
 export default function CartView() {
-  const { cart, total, addToCart, removeFromCart } = useCart();
+  const { cart, total, addToCart, removeFromCart, table } = useCart(); // <- añadido table
   const router = useRouter();
 
   const handleRemoveItem = (id: string) => {
@@ -44,6 +44,10 @@ export default function CartView() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>🛒 Carrito de Compras</Text>
+
+      {table && (
+        <Text style={styles.tableText}>🪑 Mesa: {table}</Text>
+      )}
 
       {cart.length === 0 ? (
         <Text style={styles.emptyText}>Tu carrito está vacío.</Text>
@@ -89,7 +93,12 @@ export default function CartView() {
 
       <TouchableOpacity
         style={styles.confirmButton}
-        onPress={() => Alert.alert("✅ Pedido confirmado", "Gracias por tu compra.")}
+        onPress={() =>
+          Alert.alert(
+            "✅ Pedido confirmado",
+            `Mesa: ${table}\nGracias por tu compra.`
+          )
+        }
       >
         <Text style={styles.confirmButtonText}>Confirmar Pedido</Text>
       </TouchableOpacity>
@@ -114,7 +123,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "#FFD700",
+    marginBottom: 8,
+  },
+  tableText: {
+    fontSize: 16,
+    color: "#FFD700",
     marginBottom: 16,
+    fontWeight: "bold",
   },
   emptyText: {
     color: "#AAA",
