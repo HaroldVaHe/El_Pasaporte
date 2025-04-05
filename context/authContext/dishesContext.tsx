@@ -2,11 +2,13 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { addDish, getDishes, updateDish, deleteDish } from "@/app/services/CRUD/dishesCRUD";
 
 // 🥘 Definir el tipo de un platillo
-interface Dish {
+export interface Dish {
     id: string;
     title: string;
     price: number;
     description: string;
+    codigo: number; // 👈 si también usas "codigo"
+    category: string; // 👈 agrega es
 }
 
 // 🛠 Definir el tipo de contexto

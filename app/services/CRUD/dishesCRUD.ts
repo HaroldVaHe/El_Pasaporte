@@ -1,14 +1,8 @@
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/utils/FirebaseConfig";  // Asegúrate de importar tu instancia de Firestore
+import { Dish } from "@/context/authContext/dishesContext"; // 👈 Usa el mismo tipo
 
 const DISHES_COLLECTION = "dishes";
-// 🥘 Definir la estructura de un platillo
-interface Dish {
-  id: string;
-  title: string;
-  price: number;
-  description: string;
-}
 
 // 🔹 Agregar un platillo
 export const addDish = async (title: string, price: number, description: string, category: string) => {
@@ -42,18 +36,28 @@ export const addDish = async (title: string, price: number, description: string,
   }
 };
 // 🔹 Obtener todos los platillos
-export const getDishes = async () => {
+export const getDishes = async (): Promise<Dish[]> => {
   try {
-      const querySnapshot = await getDocs(collection(db, "dishes"));
-      return querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data() // Asegura que traiga title, price y description
-      })) as Dish[]; // 👈 Especificamos que el resultado es de tipo Dish[]
+    const querySnapshot = await getDocs(collection(db, "dishes"));
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+
+      return {
+        id: doc.id,
+        title: data.title,
+        price: data.price,
+        description: data.description,
+        codigo: data.codigo,
+        category: data.category
+      };
+    });
   } catch (error) {
-      console.error("Error al obtener platillos:", error);
-      return [];
+    console.error("Error al obtener platillos:", error);
+    return [];
   }
 };
+
+
 
 
 // 🔹 Actualizar un platillo
