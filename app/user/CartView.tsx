@@ -1,4 +1,5 @@
 import React from "react";
+import { createOrder } from "@/app/services/CRUD/ordersCRUD";
 import {
   View,
   Text,
@@ -11,7 +12,15 @@ import { useCart } from "@/context/authContext/cartContext";
 import { useRouter } from "expo-router";
 
 export default function CartView() {
-  const { cart, total, addToCart, removeFromCart, table } = useCart(); // <- añadido table
+  const {
+    cart,
+    total,
+    addToCart,
+    removeFromCart,
+    clearCart, // ✅ AÑADIDO
+    table,
+  } = useCart();
+
   const router = useRouter();
 
   const handleRemoveItem = (id: string) => {
@@ -45,9 +54,7 @@ export default function CartView() {
     <View style={styles.container}>
       <Text style={styles.title}>🛒 Carrito de Compras</Text>
 
-      {table && (
-        <Text style={styles.tableText}>🪑 Mesa: {table}</Text>
-      )}
+      {table && <Text style={styles.tableText}>🪑 Mesa: {table}</Text>}
 
       {cart.length === 0 ? (
         <Text style={styles.emptyText}>Tu carrito está vacío.</Text>
@@ -93,12 +100,22 @@ export default function CartView() {
 
       <TouchableOpacity
         style={styles.confirmButton}
-        onPress={() =>
-          Alert.alert(
-            "✅ Pedido confirmado",
-            `Mesa: ${table}\nGracias por tu compra.`
-          )
-        }
+        onPress={async () => {
+          if (!table) {
+            Alert.alert("⚠️ Mesa no seleccionada", "Selecciona una mesa antes de confirmar el pedido.");
+            return;
+          }
+
+          try {
+            await createOrder(String(table), cart, total);
+            Alert.alert("✅ Pedido confirmado", `Mesa: ${table}\nGracias por tu compra.`);
+            clearCart(); // ✅ FUNCIONA
+            router.back();
+          } catch (error) {
+            Alert.alert("❌ Error", "Hubo un problema al guardar tu orden. Intenta de nuevo.");
+            console.error("Error creando orden:", error);
+          }
+        }}
       >
         <Text style={styles.confirmButtonText}>Confirmar Pedido</Text>
       </TouchableOpacity>

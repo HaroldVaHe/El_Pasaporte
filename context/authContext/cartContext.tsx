@@ -2,12 +2,13 @@
 import React, { createContext, useContext, useState, ReactNode, useMemo } from "react";
 import { Dish } from "@/context/authContext/dishesContext";
 
-type CartItem = Dish & { quantity: number };
+export type CartItem = Dish & { quantity: number };
 
-interface CartContextType {
+export interface CartContextType {
   cart: CartItem[];
   addToCart: (dish: Dish, quantity?: number) => void;
   removeFromCart: (id: string) => void;
+  clearCart: () => void;
   table: number | null;
   setTable: (table: number) => void;
   total: number;
@@ -23,6 +24,7 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [table, setTable] = useState<number | null>(null);
 
   const addToCart = (dish: Dish, quantity: number = 1) => {
     setCart((prev) => {
@@ -40,15 +42,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const clearCart = () => {
+    setCart([]);         // ✅ Limpia los productos del carrito
+    setTable(null);      // ✅ Reinicia la mesa seleccionada
+  };
+
   const total = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [cart]);
-  const [table, setTable] = useState<number | null>(null);
 
-return (
-  <CartContext.Provider value={{ cart, addToCart, removeFromCart, total, table, setTable }}>
-    {children}
-  </CartContext.Provider>
-);
-
+  return (
+    <CartContext.Provider
+      value={{ cart, addToCart, removeFromCart, clearCart, total, table, setTable }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
 };
