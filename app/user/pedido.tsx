@@ -6,8 +6,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { useDishes } from "@/context/authContext/dishesContext";
+import { useCart } from "@/context/authContext/cartContext";
 import type { Dish } from "@/context/authContext/dishesContext";
 
 interface GroupedDishes {
@@ -23,9 +26,10 @@ const categoryTitles: Record<string, string> = {
 
 export default function DishesList() {
   const { dishes } = useDishes();
+  const { addToCart } = useCart();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const router = useRouter();
 
-  // Agrupar los platos por categoría
   const grouped: GroupedDishes = dishes.reduce((acc, dish) => {
     const cat = dish.category || "otros";
     if (!acc[cat]) acc[cat] = [];
@@ -35,8 +39,9 @@ export default function DishesList() {
 
   const handleAddToCart = (dish: Dish) => {
     const quantity = quantities[dish.id] || 1;
-    console.log(`Añadido al carrito: ${dish.title} x${quantity}`);
-    // Aquí luego se conectará con el contexto del carrito
+    addToCart(dish, quantity);
+    Alert.alert("✅ Plato añadido", `${dish.title} x${quantity}`);
+    router.push("/user/CartView");
   };
 
   const changeQuantity = (id: string, delta: number) => {
@@ -99,6 +104,14 @@ export default function DishesList() {
           />
         </View>
       ))}
+
+      {/* 👉 Botón para ir al carrito sin añadir platos */}
+      <TouchableOpacity
+        style={styles.goToCartButton}
+        onPress={() => router.push("/user/CartView")}
+      >
+        <Text style={styles.goToCartButtonText}>Ir al carrito</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -110,7 +123,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1E1E2D",
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: 60,
   },
   section: {
     marginBottom: 24,
@@ -180,5 +193,17 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: "#000",
     fontWeight: "bold",
+  },
+  goToCartButton: {
+    backgroundColor: "#FFD700",
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 24,
+    alignItems: "center",
+  },
+  goToCartButtonText: {
+    color: "#000",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
