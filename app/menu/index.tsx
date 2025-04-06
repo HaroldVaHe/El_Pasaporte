@@ -1,7 +1,8 @@
-import { View, Text, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Image, Alert } from 'react-native';
 import React, { useState } from 'react';
 import Entypo from '@expo/vector-icons/Entypo';
 import CameraModal from '@/components/CameraModal';
+import { addDish } from '@/app/services/CRUD/dishesCRUD'; // Importamos la función para guardar en Firebase
 
 export default function DishCRUD() {
     const [title, setTitle] = useState('');
@@ -9,14 +10,33 @@ export default function DishCRUD() {
     const [description, setDescription] = useState('');
     const [image, setImage] = useState<string | undefined>(undefined);
     const [isVisible, setIsVisible] = useState(false);
+    const [category, setCategory] = useState<'entrada' | 'principal' | 'postre' | 'bebida' | ''>('');
 
-    const handleSave = () => {
-        // Lógica para guardar el plato
-        console.log({ title, price, description, image });
+
+    const handleSave = async () => {
+        if (!title || !price || !description || !category) {
+            Alert.alert("Error", "Todos los campos son obligatorios, incluyendo la categoría.");
+            return;
+        }
+    
+        try {
+            const newDishId = await addDish(title, parseFloat(price), description, category);
+            if (newDishId) {
+                Alert.alert("Éxito", "Platillo guardado correctamente.");
+                setTitle('');
+                setPrice('');
+                setDescription('');
+                setImage(undefined);
+                setCategory(''); // ¡Resetea también la categoría!
+            }
+        } catch (error) {
+            Alert.alert("Error", "No se pudo guardar el platillo. Intenta de nuevo.");
+            console.error(error);
+        }
     };
+    
 
     const handleDelete = () => {
-        // Lógica para eliminar el plato
         setTitle('');
         setPrice('');
         setDescription('');
@@ -41,7 +61,7 @@ export default function DishCRUD() {
                 placeholder="Título" 
                 value={title} 
                 onChangeText={setTitle} 
-                style={{ borderBottomWidth: 1, marginBottom: 10 , color: '#FFF'}} 
+                style={{ borderBottomWidth: 1, marginBottom: 10, color: '#FFF' }} 
             />
             <TextInput 
                 placeholder="Precio" 
@@ -66,9 +86,29 @@ export default function DishCRUD() {
             <TouchableOpacity onPress={handleDelete} style={{ backgroundColor: 'red', padding: 10 }}>
                 <Text style={{ color: 'white', textAlign: 'center' }}>Eliminar</Text>
             </TouchableOpacity>
-
+            <Text style={{ color: '#FFF', marginBottom: 5 }}>Categoría:</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 15 }}>
+            {['entrada', 'principal', 'postre', 'bebida'].map((cat) => (
+                <TouchableOpacity
+                key={cat}
+                onPress={() => setCategory(cat as any)}
+                style={{
+                    backgroundColor: category === cat ? '#4CAF50' : '#333',
+                    padding: 10,
+                    borderRadius: 5,
+                    marginRight: 10,
+                    marginBottom: 10
+                }}
+                >
+                <Text style={{ color: '#FFF' }}>{cat}</Text>
+                </TouchableOpacity>
+            ))}
+            </View>
             {/* Modal de Cámara */}
             <CameraModal isVisible={isVisible} setImage={setImage} onClose={() => setIsVisible(false)} />
         </View>
+        
+        
     );
+    
 }
