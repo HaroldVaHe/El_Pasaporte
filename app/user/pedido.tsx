@@ -1,3 +1,4 @@
+// DishesList.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -26,7 +27,7 @@ const categoryTitles: Record<string, string> = {
 
 export default function DishesList() {
   const { dishes } = useDishes();
-  const { addToCart } = useCart();
+  const { addToCart, setTable, table } = useCart();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const router = useRouter();
 
@@ -51,8 +52,37 @@ export default function DishesList() {
     });
   };
 
+  const renderTableSelector = () => (
+    <View style={styles.tableSelector}>
+      <Text style={styles.sectionTitle}>Selecciona la mesa:</Text>
+      <View style={styles.tableButtons}>
+        {Array.from({ length: 10 }, (_, i) => (
+          <TouchableOpacity
+            key={i}
+            style={[
+              styles.tableButton,
+              table === i + 1 && styles.tableButtonSelected,
+            ]}
+            onPress={() => setTable(i + 1)}
+          >
+            <Text
+              style={[
+                styles.tableButtonText,
+                table === i + 1 && styles.tableButtonTextSelected,
+              ]}
+            >
+              {i + 1}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      {renderTableSelector()}
+
       {Object.entries(grouped).map(([category, platos]) => (
         <View key={category} style={styles.section}>
           <Text style={styles.sectionTitle}>
@@ -105,7 +135,6 @@ export default function DishesList() {
         </View>
       ))}
 
-      {/* 👉 Botón para ir al carrito sin añadir platos */}
       <TouchableOpacity
         style={styles.goToCartButton}
         onPress={() => router.push("/user/CartView")}
@@ -205,5 +234,31 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  tableSelector: {
+    marginBottom: 24,
+  },
+  tableButtons: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 10,
+  },
+  tableButton: {
+    backgroundColor: "#2E2E3E",
+    padding: 10,
+    borderRadius: 8,
+    width: 40,
+    alignItems: "center",
+  },
+  tableButtonSelected: {
+    backgroundColor: "#FFD700",
+  },
+  tableButtonText: {
+    color: "#FFF",
+    fontWeight: "bold",
+  },
+  tableButtonTextSelected: {
+    color: "#000",
   },
 });
