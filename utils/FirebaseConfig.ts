@@ -1,42 +1,57 @@
-// Import the functions you need from the SDKs you need
-import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
-// import { getFirestore } from 'firebase/firestore/lite';
-import { initializeAuth, indexedDBLocalPersistence } from 'firebase/auth';
+import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
-// import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { getStorage } from "firebase/storage";
+import { getAuth } from "firebase/auth";  // 🔥 CORREGIDO: Usa getAuth
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createClient } from "@supabase/supabase-js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const apiKey= process.env.EXPO_PUBLIC_API_KEY_AUTH
+const apiKey = process.env.EXPO_PUBLIC_API_KEY_AUTH || "AIzaSyADep16I-JrtCqaDQyGuaaIlTkRdjAkxw8";
+
+// Configuración de Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyADep16I-JrtCqaDQyGuaaIlTkRdjAkxw8",
+    apiKey: apiKey,
     authDomain: "elpasaporte-b25ab.firebaseapp.com",
     projectId: "elpasaporte-b25ab",
-    storageBucket: "elpasaporte-b25ab.firebasestorage.app",
+    storageBucket: "elpasaporte-b25ab.appspot.com",
     messagingSenderId: "992029149836",
     appId: "1:992029149836:web:4a04b0083959aad78c49a9",
     measurementId: "G-3XK8DE5EWX"
-  };
+};
 
-// Initialize Firebase
+// 🔥 Inicializa Firebase
 const app = initializeApp(firebaseConfig);
 
+// 🔥 Inicializa Firestore
 export const db = getFirestore(app);
-// Inicializar Analytics solo en el navegador
+
+// 🔥 Inicializa Storage
+export const storage = getStorage(app);
+
+// 🔥 CORREGIDO: Usa `getAuth` en lugar de `initializeAuth`
+export const auth = getAuth(app);
+
+// Inicializa Analytics solo en el navegador
 let analytics;
 if (typeof window !== "undefined") {
     analytics = getAnalytics(app);
 }
-
 export { analytics };
 
-// Inicializar Auth
-export const auth = initializeAuth(app, {
-    persistence: indexedDBLocalPersistence,
+// 🔥 Configuración de Supabase
+const SUPABASE_URL = "https://xyzcompany.supabase.co";  // Reemplaza con tu URL de Supabase
+const SUPABASE_ANON_KEY = "your-anon-key";  // Reemplaza con tu clave anónima de Supabase
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        storage: AsyncStorage,  // Usa AsyncStorage en React Native
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: false,  // Evita problemas con `window`
+    },
 });
-
-
+if (!db) {
+    console.error("❌ Firebase Firestore no está inicializado correctamente.");
+  }
+  

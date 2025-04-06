@@ -18,21 +18,27 @@ const uploadImage = async (uri: string) => {
         const fileName = `images/${Date.now()}.jpg`;
 
         const { data, error } = await supabase.storage
-            .from('dish.image') // Reemplaza con el nombre de tu bucket en Supabase
-            .upload(fileName, blob, {
-                contentType: 'image/jpeg',
-            });
+            .from('dish.image') // Reemplaza con el nombre correcto de tu bucket en Supabase
+            .upload(fileName, blob, { contentType: 'image/jpeg' });
 
         if (error) {
-            console.error('Error subiendo la imagen:', error);
-            return;
+            console.error('❌ Error subiendo la imagen:', error);
+            return null;
         }
 
-        console.log('Imagen subida:', data);
+        // 🔥 OBTENER URL PÚBLICA DE LA IMAGEN 🔥
+        const { data: publicUrlData } = supabase.storage
+            .from('dish.image')
+            .getPublicUrl(fileName);
+
+        console.log('✅ Imagen subida:', publicUrlData.publicUrl);
+        return publicUrlData.publicUrl; // Retorna la URL pública de la imagen
     } catch (error) {
-        console.error('Error en la subida:', error);
+        console.error('❌ Error en la subida:', error);
+        return null;
     }
 };
+
 export default function CameraModal(props: CameraModalProps) {
 
     const [facing, setFacing] = useState<CameraType>('back');
@@ -52,7 +58,10 @@ export default function CameraModal(props: CameraModalProps) {
         });
     
         if (result) {
-            await uploadImage(result.uri);
+            const uploadedUrl = await uploadImage(result.uri); // 🔥 Obtiene URL tras subir
+            if (uploadedUrl) {
+                props.setImage(uploadedUrl); // 🔥 Almacena URL real de la imagen
+            }
         }
     };
     
@@ -66,11 +75,13 @@ export default function CameraModal(props: CameraModalProps) {
     
         if (!result.canceled && result.assets.length > 0) {
             const imageUri = result.assets[0].uri;
-            props.setImage(imageUri); // Muestra la imagen seleccionada en la UI
-    
-            await uploadImage(imageUri); // Sube la imagen a Supabase
+            const uploadedUrl = await uploadImage(imageUri); // 🔥 Obtiene URL tras subir
+            if (uploadedUrl) {
+                props.setImage(uploadedUrl); // 🔥 Almacena URL real de la imagen
+            }
         }
     };
+    
     
     
 
