@@ -1,11 +1,18 @@
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/utils/FirebaseConfig";  // Asegúrate de importar tu instancia de Firestore
 import { Dish } from "@/context/authContext/dishesContext"; // 👈 Usa el mismo tipo
+import { uploadImageToSupabase } from '@/app/services/CRUD/uploadToSupabase';
 
 const DISHES_COLLECTION = "dishes";
 
 // 🔹 Agregar un platillo
-export const addDish = async (title: string, price: number, description: string, category: string) => {
+export const addDish = async (
+  title: string,
+  price: number,
+  description: string,
+  category: string,
+  imageUrl?: string // <- nuevo parámetro
+) => {
   try {
     const [min, max] = getCategoryRange(category);
     const snapshot = await getDocs(collection(db, DISHES_COLLECTION));
@@ -27,6 +34,7 @@ export const addDish = async (title: string, price: number, description: string,
       description,
       category,
       codigo: newCode,
+      imageUrl: imageUrl || null, // <- lo guardamos
     });
 
     console.log("Platillo agregado con ID:", docRef.id);
@@ -35,6 +43,8 @@ export const addDish = async (title: string, price: number, description: string,
     console.error("Error al agregar el platillo:", error);
   }
 };
+
+
 // 🔹 Obtener todos los platillos
 export const getDishes = async (): Promise<Dish[]> => {
   try {

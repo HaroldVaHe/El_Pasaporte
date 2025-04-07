@@ -4,6 +4,8 @@ import Entypo from '@expo/vector-icons/Entypo';
 import * as ImagePicker from 'expo-image-picker';
 import CameraModal from '@/components/CameraModal';
 import { addDish } from '@/app/services/CRUD/dishesCRUD';
+import { uploadImageToSupabase } from '@/app/services/CRUD/uploadToSupabase';
+
 
 export default function DishCRUD() {
   const [title, setTitle] = useState('');
@@ -18,9 +20,21 @@ export default function DishCRUD() {
       Alert.alert("Error", "Todos los campos son obligatorios, incluyendo la categoría.");
       return;
     }
-
+  
     try {
-      const newDishId = await addDish(title, parseFloat(price), description, category);
+      let imageUrl = '';
+  
+      if (image) {
+        const fileName = `dish-${Date.now()}.jpg`;
+        const url = await uploadImageToSupabase(image, fileName);
+        if (!url) {
+          Alert.alert("Error", "No se pudo subir la imagen");
+          return;
+        }
+        imageUrl = url;
+      }
+  
+      const newDishId = await addDish(title, parseFloat(price), description, category, imageUrl);
       if (newDishId) {
         Alert.alert("Éxito", "Platillo guardado correctamente.");
         setTitle('');
@@ -34,6 +48,7 @@ export default function DishCRUD() {
       console.error(error);
     }
   };
+  
 
   const handleDelete = () => {
     setTitle('');
