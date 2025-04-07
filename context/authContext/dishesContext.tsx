@@ -10,6 +10,7 @@ export interface Dish {
   description: string;
   codigo: number;
   category: string;
+  imageUrl?: string; // ✅ Nuevo campo opcional para la imagen
 }
 
 // 🛠 Definir el tipo de contexto
@@ -21,7 +22,7 @@ interface DishesContextType {
     price: number,
     description: string,
     category: string,
-    imageUri?: string // 👈 ahora acepta una imagen opcional
+    imageUri?: string
   ) => Promise<void>;
   editDish: (id: string, updatedData: Partial<Dish>) => Promise<void>;
   removeDish: (id: string) => Promise<void>;
@@ -44,16 +45,18 @@ export const DishesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     price: number,
     description: string,
     category: string,
-    imageUri?: string // 👈 nuevo parámetro opcional
+    imageUri?: string
   ) => {
     try {
+      let imageUrl: string | null = null;
+
       if (imageUri) {
         const fileName = `dish-${Date.now()}.jpg`;
-        const imageUrl = await uploadImageToSupabase(imageUri, fileName); // ✅ Dos argumentos
+        imageUrl = await uploadImageToSupabase(imageUri, fileName);
         console.log("✅ Imagen subida correctamente a Supabase:", imageUrl);
       }
 
-      const newDishId = await addDish(title, price, description, category);
+      const newDishId = await addDish(title, price, description, category, imageUrl || undefined);
       if (newDishId) fetchDishes();
     } catch (error) {
       console.error("❌ Error al agregar el platillo con imagen:", error);
@@ -87,3 +90,4 @@ export const useDishes = () => {
   if (!context) throw new Error("useDishes debe usarse dentro de un DishesProvider");
   return context;
 };
+        

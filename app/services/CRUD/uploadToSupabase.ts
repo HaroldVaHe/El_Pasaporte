@@ -9,13 +9,14 @@ export const uploadImageToSupabase = async (
   fileName: string
 ): Promise<string | null> => {
   try {
-    const response = await fetch(uri);
-    const blob = await response.blob();
+    const base64 = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
 
     const { data, error } = await supabase.storage
       .from('dish.image')
-      .upload(`dishes/${fileName}`, blob, {
-        contentType: blob.type,
+      .upload(`dishes/${fileName}`, decode(base64), {
+        contentType: 'image/jpeg', // o 'image/png' si es png
         upsert: true,
       });
 
@@ -35,4 +36,4 @@ export const uploadImageToSupabase = async (
     return null;
   }
 };
-
+ 
