@@ -6,13 +6,14 @@ import { AuthProvider } from "@/context/authContext/authContext"; // 👈 Asegú
 
 export default function RootLayout() {
   return (
-    <AuthProvider>  // Si necesitas el AuthProvider aquí, puedes añadirlo
-    <DishesProvider>
+    <AuthProvider>
       <CartProvider>
-        <Stack />
+        <DishesProvider>
+          <Stack />
+        </DishesProvider>
       </CartProvider>
-    </DishesProvider>
-    </AuthProvider>  // Si necesitas el AuthProvider aquí, puedes añadirlo
+    </AuthProvider>
+
 
   );
 }
