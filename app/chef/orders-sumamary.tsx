@@ -36,16 +36,40 @@ const OrdersSummary: React.FC = () => {
     };
 
     const updateStatus = async (orderId: string, newStatus: string) => {
-        try {
-            const orderRef = doc(db, "orders", orderId);
-            await updateDoc(orderRef, { status: newStatus });
-            Alert.alert("✅ Éxito", `Estado actualizado a "${newStatus}"`);
-            fetchOrders(); // recarga la lista
-        } catch (error) {
-            console.error("Error actualizando el estado:", error);
-            Alert.alert("❌ Error", "No se pudo actualizar el estado.");
+    try {
+        const orderRef = doc(db, "orders", orderId);
+        await updateDoc(orderRef, { status: newStatus });
+        Alert.alert("✅ Éxito", `Estado actualizado a "${newStatus}"`);
+        fetchOrders();
+
+        // ⏱ Transición automática según el nuevo estado
+        if (newStatus === "Listo") {
+            // Cambiar a "Entregado" después de 5 segundos
+            setTimeout(async () => {
+                try {
+                    await updateDoc(orderRef, { status: "Entregado" });
+                    fetchOrders();
+
+                    // Luego de otros 5 segundos, cambiar a "Pagar"
+                    setTimeout(async () => {
+                        try {
+                            await updateDoc(orderRef, { status: "Pagar" });
+                            fetchOrders();
+                        } catch (error) {
+                            console.error("Error actualizando a Pagar:", error);
+                        }
+                    }, 5000);
+
+                } catch (error) {
+                    console.error("Error actualizando a Entregado:", error);
+                }
+            }, 5000);
         }
-    };
+    } catch (error) {
+        console.error("Error actualizando el estado:", error);
+        Alert.alert("❌ Error", "No se pudo actualizar el estado.");
+    }
+};
 
     useEffect(() => {
         fetchOrders();
@@ -89,13 +113,13 @@ const OrdersSummary: React.FC = () => {
                                     style={[styles.statusButton, { backgroundColor: "#FF9800" }]}
                                     onPress={() => updateStatus(item.id, "Cocinando")}
                                 >
-                                    <Text style={styles.buttonText}>Marcar como Cocinando</Text>
+                                    <Text style={styles.buttonText}>Cocinando</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.statusButton, { backgroundColor: "#4CAF50" }]}
                                     onPress={() => updateStatus(item.id, "Listo")}
                                 >
-                                    <Text style={styles.buttonText}>Marcar como Listo</Text>
+                                    <Text style={styles.buttonText}>Listo</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>

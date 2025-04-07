@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     } catch (error: any) {
-      console.error("Error Login: ", error.message);
+      //console.error("Error Login: ", error.message);
       setError("Correo o contraseña incorrectos");
     }
   };
