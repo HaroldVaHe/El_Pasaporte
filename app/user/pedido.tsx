@@ -1,5 +1,6 @@
 // DishesList.tsx
 import React, { useState } from "react";
+
 import {
   View,
   Text,
@@ -8,6 +9,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useDishes } from "@/context/authContext/dishesContext";
@@ -97,6 +99,13 @@ export default function DishesList() {
               const quantity = quantities[item.id] || 1;
               return (
                 <View style={styles.card}>
+                  {item.imageUrl && (
+                    <Image
+                      source={{ uri: item.imageUrl }}
+                      style={styles.dishImage}
+                      resizeMode="cover"
+                    />
+                  )}
                   <Text style={styles.code}>#{item.codigo}</Text>
                   <Text style={styles.title}>{item.title}</Text>
                   <Text style={styles.description}>{item.description}</Text>
@@ -168,6 +177,12 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     marginBottom: 10,
+  },
+  dishImage: {
+    width: "100%",
+    height: 180,
+    borderRadius: 10,
+    marginBottom: 8,
   },
   code: {
     color: "#888",

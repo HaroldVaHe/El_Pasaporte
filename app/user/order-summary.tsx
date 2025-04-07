@@ -7,17 +7,18 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   StyleSheet,
+  Image, // 👈 Importación añadida
 } from "react-native";
 import { getDoc, doc } from "firebase/firestore";
 import { db } from "@/utils/FirebaseConfig";
-import { useCart } from "@/context/authContext/cartContext"; // ✅ Contexto del carrito
+import { useCart } from "@/context/authContext/cartContext";
 
 export default function OrderSummary() {
   const localParams = useLocalSearchParams();
   const router = useRouter();
-  const { orderId: contextOrderId } = useCart(); // ✅ OrderId desde el contexto
+  const { orderId: contextOrderId } = useCart();
 
-  const orderId = String(localParams.orderId || contextOrderId); // ✅ Usa URL primero, luego contexto
+  const orderId = String(localParams.orderId || contextOrderId);
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -70,6 +71,13 @@ export default function OrderSummary() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.item}>
+            {item.imageUrl && (
+              <Image
+                source={{ uri: item.imageUrl }}
+                style={styles.image}
+                resizeMode="cover"
+              />
+            )}
             <Text style={styles.itemTitle}>{item.title}</Text>
             <Text style={styles.itemText}>Cantidad: {item.quantity}</Text>
             <Text style={styles.itemText}>
@@ -119,6 +127,12 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     marginBottom: 12,
+  },
+  image: {
+    width: "100%",
+    height: 120,
+    borderRadius: 8,
+    marginBottom: 10,
   },
   itemTitle: {
     color: "#FFF",
