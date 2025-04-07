@@ -1,5 +1,7 @@
 import React from "react";
 import { createOrder } from "@/app/services/CRUD/ordersCRUD";
+import { router } from "expo-router";
+
 import {
   View,
   Text,
@@ -99,26 +101,28 @@ export default function CartView() {
       </View>
 
       <TouchableOpacity
-        style={styles.confirmButton}
-        onPress={async () => {
-          if (!table) {
-            Alert.alert("⚠️ Mesa no seleccionada", "Selecciona una mesa antes de confirmar el pedido.");
-            return;
-          }
+  style={styles.confirmButton}
+  onPress={async () => {
+    if (!table) {
+      Alert.alert("⚠️ Mesa no seleccionada", "Selecciona una mesa antes de confirmar el pedido.");
+      return;
+    }
 
-          try {
-            await createOrder(String(table), cart, total);
-            Alert.alert("✅ Pedido confirmado", `Mesa: ${table}\nGracias por tu compra.`);
-            clearCart(); // ✅ FUNCIONA
-            router.back();
-          } catch (error) {
-            Alert.alert("❌ Error", "Hubo un problema al guardar tu orden. Intenta de nuevo.");
-            console.error("Error creando orden:", error);
-          }
-        }}
-      >
-        <Text style={styles.confirmButtonText}>Confirmar Pedido</Text>
-      </TouchableOpacity>
+    try {
+      const orderId = await createOrder(String(table), cart, total);
+      clearCart();
+      router.push({
+        pathname: "../user/order-summary", // Tu vista se llama 'orderId.tsx'
+        params: { orderId },  // Aquí mandas el ID recién creado
+      });    } catch (error) {
+      Alert.alert("❌ Error", "Hubo un problema al guardar tu orden. Intenta de nuevo.");
+      console.error("Error creando orden:", error);
+    }
+  }}
+>
+  <Text style={styles.confirmButtonText}>Confirmar Pedido</Text>
+</TouchableOpacity>
+
 
       <TouchableOpacity
         style={styles.backButton}

@@ -13,6 +13,7 @@ export const createOrder = async (
       table,
       items,
       total,
+      status: "ordenado", // ✅ Añadido
       createdAt: Timestamp.now(),
     };
 

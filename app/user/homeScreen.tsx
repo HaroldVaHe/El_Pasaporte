@@ -1,6 +1,16 @@
 import React from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, FlatList, StatusBar } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  StatusBar,
+} from "react-native";
 import { useRouter } from "expo-router";
+import { useCart } from "@/context/authContext/cartContext"; // ✅ importá el contexto
 
 const foodImages = [
   { id: "1", uri: "https://source.unsplash.com/400x300/?sushi,food" },
@@ -12,10 +22,10 @@ const foodImages = [
 
 const HomeScreen = () => {
   const router = useRouter();
+  const { orderId } = useCart(); // ✅ obtené el orderId desde el contexto
 
   return (
     <View style={styles.container}>
-      {/* Ajuste dinámico para evitar que el contenido se sobreponga con la barra de estado */}
       <StatusBar barStyle="light-content" />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -24,20 +34,20 @@ const HomeScreen = () => {
           style={styles.headerImage}
         />
 
-        <Text style={styles.title}>Bienvenido a **El Pasaporte**</Text>
+        <Text style={styles.title}>Bienvenido a El Pasaporte</Text>
 
         <Text style={styles.description}>
-          🍽️ **El Pasaporte** es mucho más que un restaurante, es una experiencia gastronómica que te 
+          🍽️ El Pasaporte es mucho más que un restaurante, es una experiencia gastronómica que te 
           transporta a diferentes rincones del mundo a través de los sabores más auténticos.  
           
-          🌍 Con **5 estrellas Michelin**, somos el destino favorito de los amantes de la buena comida, 
+          🌍 Con 5 estrellas Michelin, somos el destino favorito de los amantes de la buena comida, 
           aquellos que buscan calidad, autenticidad y un viaje culinario sin salir de su mesa.  
 
           🏆 Cada plato ha sido elaborado con recetas originales, ingredientes frescos y técnicas 
           tradicionales que capturan la esencia de cada cultura. 
 
-          🔥 En **El Pasaporte**, podrás disfrutar desde un **sushi artesanal japonés**, un **filete jugoso argentino**, 
-          hasta una **cremosa pasta italiana** o una **paella española perfectamente preparada**.
+          🔥 En El Pasaporte, podrás disfrutar desde un sushi artesanal japonés, un filete jugoso argentino, 
+          hasta una cremosa pasta italiana o una paella española perfectamente preparada.
         </Text>
 
         <Text style={styles.subTitle}>🌟 Explora nuestra gastronomía</Text>
@@ -55,8 +65,20 @@ const HomeScreen = () => {
         />
       </ScrollView>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push("/user/pedido")}>
+      {/* Botón para registrar pedido */}
+      <TouchableOpacity style={styles.button} onPress={() => router.push("../user/pedido")}>
         <Text style={styles.buttonText}>Registrar Pedido 🍽️</Text>
+      </TouchableOpacity>
+
+      {/* Botón para ver resumen del pedido */}
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: "#4CAF50", marginTop: 10 }]}
+        onPress={() => router.push("../user/order-summary")} // ✅ sin pasar params
+        disabled={!orderId} // 🔒 Evita errores si no existe orderId
+      >
+        <Text style={styles.buttonText}>
+          {orderId ? "🔎 Ver resumen del pedido" : "⏳ Esperando pedido..."}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -66,17 +88,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1E1E2D",
-    paddingTop: StatusBar.currentHeight || 30, // Asegura que el contenido no quede muy arriba
+    paddingTop: StatusBar.currentHeight || 30,
   },
   scrollContent: {
-    flexGrow: 1, // Permite que el contenido se expanda correctamente
+    flexGrow: 1,
     padding: 20,
     alignItems: "center",
-    justifyContent: "flex-start", // Se asegura que el contenido empiece desde arriba
+    justifyContent: "flex-start",
   },
   headerImage: {
     width: "100%",
-    height: 200, // Se ajustó la altura para que no empuje el contenido demasiado abajo
+    height: 200,
     borderRadius: 15,
     marginBottom: 20,
     resizeMode: "cover",
