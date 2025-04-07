@@ -22,6 +22,9 @@ export interface CartContextType {
   orderId: string | null;
   setOrderId: Dispatch<SetStateAction<string | null>>;
 }
+const createOrder = (id: string) => {
+  setOrderId(id);
+};
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -31,10 +34,10 @@ export const useCart = () => {
   return context;
 };
 
+const [orderId, setOrderId] = useState<string | null>(null); // 👈 añadido
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [table, setTable] = useState<number | null>(null);
-  const [orderId, setOrderId] = useState<string | null>(null); // 👈 añadido
 
   const addToCart = (dish: Dish, quantity: number = 1) => {
     setCart((prev) => {

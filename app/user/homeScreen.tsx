@@ -73,7 +73,7 @@ const HomeScreen = () => {
       {/* Botón para ver resumen del pedido */}
       <TouchableOpacity
         style={[styles.button, { backgroundColor: "#4CAF50", marginTop: 10 }]}
-        onPress={() => router.push("../user/order-summary")} // ✅ sin pasar params
+        onPress={() => router.push({ pathname: "../user/order-summary", params: { orderId } })}
         disabled={!orderId} // 🔒 Evita errores si no existe orderId
       >
         <Text style={styles.buttonText}>
