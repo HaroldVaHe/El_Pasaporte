@@ -54,8 +54,8 @@ const HomeScreen = () => {
         />
       </ScrollView>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push("/auth/signIn")}>
-        <Text style={styles.buttonText}>Registrar Pedido 🍽️</Text>
+      <TouchableOpacity style={styles.button} onPress={() => router.push("/cashier/filterView")}>
+        <Text style={styles.buttonText}>Mirar ordenes</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={() => router.push("../menu/")}>
         <Text style={styles.buttonText}>Registrar Plato 🍽️</Text>
