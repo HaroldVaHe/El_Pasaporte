@@ -8,13 +8,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  Image, // 👈 importamos Image
+  Image,
 } from "react-native";
 import { useCart } from "@/context/authContext/cartContext";
-import { AuthContext } from "@/context/authContext/authContext"; // o el path correcto
+import { AuthContext } from "@/context/authContext/authContext";
 
 import { useRouter } from "expo-router";
-
 
 export default function CartView() {
   const { user, role, currentUser, login, logout } = useContext(AuthContext)!;
@@ -113,35 +112,19 @@ export default function CartView() {
       </View>
 
       <TouchableOpacity
-
-  style={styles.confirmButton}
-  onPress={async () => {
-    if (!table) {
-      Alert.alert("⚠️ Mesa no seleccionada", "Selecciona una mesa antes de confirmar el pedido.");
-      return;
-    }
-
-    try {
-      if (!currentUser?.uid) {
-        Alert.alert("⚠️ Usuario no autenticado", "Por favor, inicia sesión para confirmar el pedido.");
-        return;
-      }
-      const orderId = await createOrder(String(table), cart, total, currentUser.uid);
-      clearCart();
-      router.push({
-        pathname: "../user/order-summary", // Tu vista se llama 'orderId.tsx'
-        params: { orderId },  // Aquí mandas el ID recién creado
-      });    } catch (error) {
-      Alert.alert("❌ Error", "Hubo un problema al guardar tu orden. Intenta de nuevo.");
-      console.error("Error creando orden:", error);
-    }
-  }}
->
-  <Text style={styles.confirmButtonText}>Confirmar Pedido</Text>
-</TouchableOpacity>
+        style={styles.confirmButton}
+        onPress={async () => {
+          if (!table) {
+            Alert.alert("⚠️ Mesa no seleccionada", "Selecciona una mesa antes de confirmar el pedido.");
+            return;
+          }
 
           try {
-            const orderId = await createOrder(String(table), cart, total);
+            if (!currentUser?.uid) {
+              Alert.alert("⚠️ Usuario no autenticado", "Por favor, inicia sesión para confirmar el pedido.");
+              return;
+            }
+            const orderId = await createOrder(String(table), cart, total, currentUser.uid);
             clearCart();
             router.push({
               pathname: "../user/order-summary",
