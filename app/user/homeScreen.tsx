@@ -13,12 +13,14 @@ import { useRouter } from "expo-router";
 import { useCart } from "@/context/authContext/cartContext"; // ✅ importá el contexto
 
 const foodImages = [
-  { id: "1", uri: "https://source.unsplash.com/400x300/?sushi,food" },
-  { id: "2", uri: "https://source.unsplash.com/400x300/?pasta,italian" },
-  { id: "3", uri: "https://source.unsplash.com/400x300/?paella,spanish" },
-  { id: "4", uri: "https://source.unsplash.com/400x300/?steak,food" },
-  { id: "5", uri: "https://source.unsplash.com/400x300/?indian,food" },
+  { id: "1", source: require("../../assets/images/sishi.png") },
+  { id: "2", source: require("../../assets/images/Pasta.png") },
+  { id: "3", source: require("../../assets/images/Paella.png") },
+  { id: "4", source: require("../../assets/images/Filete.png") },
+  { id: "5", source: require("../../assets/images/BandejaPaisa.png") },
 ];
+
+
 
 const HomeScreen = () => {
   const router = useRouter();
@@ -29,10 +31,11 @@ const HomeScreen = () => {
       <StatusBar barStyle="light-content" />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Image
-          source={{ uri: "https://source.unsplash.com/600x400/?restaurant,dining" }}
-          style={styles.headerImage}
-        />
+  <Image
+    source={require("../../assets/images/fondoPantalla.jpg")}
+    style={styles.headerImage}
+  />
+
 
         <Text style={styles.title}>Bienvenido a El Pasaporte</Text>
 
@@ -53,16 +56,17 @@ const HomeScreen = () => {
         <Text style={styles.subTitle}>🌟 Explora nuestra gastronomía</Text>
 
         <FlatList
-          data={foodImages}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={styles.imageCard}>
-              <Image source={{ uri: item.uri }} style={styles.foodImage} />
-            </View>
-          )}
-        />
+      data={foodImages}
+        keyExtractor={(item) => item.id}
+        horizontal
+      showsHorizontalScrollIndicator={false}
+        renderItem={({ item }) => (
+    <View style={styles.imageCard}>
+      <Image source={item.source} style={styles.foodImage} />
+    </View>
+  )}
+/>
+
       </ScrollView>
 
       {/* Botón para registrar pedido */}

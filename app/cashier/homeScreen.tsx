@@ -3,26 +3,25 @@ import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, FlatList, 
 import { useRouter } from "expo-router";
 
 const foodImages = [
-  { id: "1", uri: "https://source.unsplash.com/400x300/?sushi,food" },
-  { id: "2", uri: "https://source.unsplash.com/400x300/?pasta,italian" },
-  { id: "3", uri: "https://source.unsplash.com/400x300/?paella,spanish" },
-  { id: "4", uri: "https://source.unsplash.com/400x300/?steak,food" },
-  { id: "5", uri: "https://source.unsplash.com/400x300/?indian,food" },
+  { id: "1", source: require("../../assets/images/sishi.png") },
+  { id: "2", source: require("../../assets/images/Pasta.png") },
+  { id: "3", source: require("../../assets/images/Paella.png") },
+  { id: "4", source: require("../../assets/images/Filete.png") },
+  { id: "5", source: require("../../assets/images/BandejaPaisa.png") },
 ];
 
 const HomeScreen = () => {
   const router = useRouter();
 
-  return (
-    <View style={styles.container}>
-      {/* Ajuste dinámico para evitar que el contenido se sobreponga con la barra de estado */}
-      <StatusBar barStyle="light-content" />
-
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Image
-          source={{ uri: "https://source.unsplash.com/600x400/?restaurant,dining" }}
-          style={styles.headerImage}
-        />
+ return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" />
+  
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+    <Image
+      source={require("../../assets/images/fondoPantalla.jpg")}
+      style={styles.headerImage}
+    />
 
         <Text style={styles.title}>Bienvenido a **El Pasaporte**</Text>
 
@@ -42,15 +41,15 @@ const HomeScreen = () => {
 
         <Text style={styles.subTitle}>🌟 Explora nuestra gastronomía</Text>
 
-        <FlatList
-          data={foodImages}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={styles.imageCard}>
-              <Image source={{ uri: item.uri }} style={styles.foodImage} />
-            </View>
+     <FlatList
+           data={foodImages}
+             keyExtractor={(item) => item.id}
+             horizontal
+           showsHorizontalScrollIndicator={false}
+             renderItem={({ item }) => (
+         <View style={styles.imageCard}>
+           <Image source={item.source} style={styles.foodImage} />
+         </View>
           )}
         />
       </ScrollView>
