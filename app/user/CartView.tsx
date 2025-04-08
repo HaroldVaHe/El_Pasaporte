@@ -1,7 +1,6 @@
 import React, { useContext } from "react";
 import { createOrder } from "@/app/services/CRUD/ordersCRUD";
 import { router } from "expo-router";
-
 import {
   View,
   Text,
@@ -9,6 +8,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Image, // 👈 importamos Image
 } from "react-native";
 import { useCart } from "@/context/authContext/cartContext";
 import { AuthContext } from "@/context/authContext/authContext"; // o el path correcto
@@ -23,7 +23,7 @@ export default function CartView() {
     total,
     addToCart,
     removeFromCart,
-    clearCart, // ✅ AÑADIDO
+    clearCart,
     table,
   } = useCart();
 
@@ -70,6 +70,14 @@ export default function CartView() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.item}>
+              {item.imageUrl && (
+                <Image
+                  source={{ uri: item.imageUrl }}
+                  style={styles.dishImage}
+                  resizeMode="cover"
+                />
+              )}
+
               <View style={styles.infoContainer}>
                 <Text style={styles.name}>{item.title}</Text>
                 <Text style={styles.details}>
@@ -105,6 +113,7 @@ export default function CartView() {
       </View>
 
       <TouchableOpacity
+
   style={styles.confirmButton}
   onPress={async () => {
     if (!table) {
@@ -131,6 +140,21 @@ export default function CartView() {
   <Text style={styles.confirmButtonText}>Confirmar Pedido</Text>
 </TouchableOpacity>
 
+          try {
+            const orderId = await createOrder(String(table), cart, total);
+            clearCart();
+            router.push({
+              pathname: "../user/order-summary",
+              params: { orderId },
+            });
+          } catch (error) {
+            Alert.alert("❌ Error", "Hubo un problema al guardar tu orden. Intenta de nuevo.");
+            console.error("Error creando orden:", error);
+          }
+        }}
+      >
+        <Text style={styles.confirmButtonText}>Confirmar Pedido</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.backButton}
@@ -172,8 +196,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 12,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+  },
+  dishImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
   },
   infoContainer: {
     flex: 1,
