@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createOrder } from "@/app/services/CRUD/ordersCRUD";
 import { router } from "expo-router";
 import {
@@ -8,12 +8,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  Image, // 👈 importamos Image
+  Image,
 } from "react-native";
 import { useCart } from "@/context/authContext/cartContext";
+import { AuthContext } from "@/context/authContext/authContext";
+
 import { useRouter } from "expo-router";
 
 export default function CartView() {
+  const { user, role, currentUser, login, logout } = useContext(AuthContext)!;
   const {
     cart,
     total,
@@ -117,7 +120,11 @@ export default function CartView() {
           }
 
           try {
-            const orderId = await createOrder(String(table), cart, total);
+            if (!currentUser?.uid) {
+              Alert.alert("⚠️ Usuario no autenticado", "Por favor, inicia sesión para confirmar el pedido.");
+              return;
+            }
+            const orderId = await createOrder(String(table), cart, total, currentUser.uid);
             clearCart();
             router.push({
               pathname: "../user/order-summary",

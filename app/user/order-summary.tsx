@@ -9,7 +9,7 @@ import {
   StyleSheet,
   Image, // 👈 Importación añadida
 } from "react-native";
-import { getDoc, doc } from "firebase/firestore";
+import { getDoc, doc, onSnapshot  } from "firebase/firestore";
 import { db } from "@/utils/FirebaseConfig";
 import { useCart } from "@/context/authContext/cartContext";
 
@@ -23,24 +23,24 @@ export default function OrderSummary() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const docRef = doc(db, "orders", orderId);
-        const snapshot = await getDoc(docRef);
-
-        if (snapshot.exists()) {
-          setOrder(snapshot.data());
-        } else {
-          console.warn("Orden no encontrada");
-        }
-      } catch (error) {
-        console.error("Error obteniendo la orden:", error);
-      } finally {
-        setLoading(false);
+    if (!orderId) return;
+  
+    const docRef = doc(db, "orders", orderId);
+  
+    const unsubscribe = onSnapshot(docRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setOrder(snapshot.data());
+      } else {
+        console.warn("Orden no encontrada");
+        setOrder(null);
       }
-    };
-
-    if (orderId) fetchOrder();
+      setLoading(false);
+    }, (error) => {
+      console.error("Error en tiempo real al obtener la orden:", error);
+      setLoading(false);
+    });
+  
+    return () => unsubscribe(); // Cleanup cuando se desmonta el componente
   }, [orderId]);
 
   if (loading) {
@@ -58,6 +58,13 @@ export default function OrderSummary() {
       </View>
     );
   }
+  const formatDate = (timestamp: any) => {
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return new Intl.DateTimeFormat("es-CO", {
+      dateStyle: "full",
+      timeStyle: "short",
+    }).format(date);
+  };
 
   return (
     <View style={styles.container}>
@@ -65,6 +72,9 @@ export default function OrderSummary() {
 
       <Text style={styles.subtitle}>🪑 Mesa: {order.table}</Text>
       <Text style={styles.subtitle}>📦 Estado: {order.status}</Text>
+      <Text style={styles.subtitle}>📅 Fecha: {formatDate(order.createdAt)}</Text>
+
+      
 
       <FlatList
         data={order.items}
@@ -92,8 +102,8 @@ export default function OrderSummary() {
 
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => router.push("../user/homeScreen")}
-      >
+        onPress={() => router.back()}
+        >
         <Text style={styles.backButtonText}>⬅️ Volver al inicio</Text>
       </TouchableOpacity>
     </View>

@@ -5,6 +5,9 @@ import { useRouter } from "expo-router";
 import { setDoc, doc, getDoc } from "firebase/firestore";
 import { User } from "@/interfaces/common";
 
+
+
+
 interface AuthContextProps {
   currentUser: FirebaseUser | null;
   login: (email: string, password: string) => Promise<void>;
@@ -24,6 +27,7 @@ interface AuthContextProps {
 export const AuthContext = createContext<AuthContextProps | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
 
   const router = useRouter();
@@ -32,12 +36,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [role, setRole] = useState<"client" | "chef" | "cashier" | null>("client");
+
+  
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user: any) => {
-      setCurrentUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setCurrentUser(firebaseUser);
+  
+      if (firebaseUser) {
+        try {
+          const userDocRef = doc(db, "users", firebaseUser.uid);
+          const userDoc = await getDoc(userDocRef);
+  
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setRole(userData.role as "client" | "chef" | "cashier");
+            setUser({
+              email: firebaseUser.email || "",
+              name: userData.name || "",
+              password: "",
+              role: userData.role as "client" | "chef" | "cashier",
+            });
+          }
+        } catch (error) {
+          console.error("Error al obtener datos del usuario:", error);
+        }
+      } else {
+        setUser(null);
+        setRole(null);
+      }
     });
+  
     return () => unsubscribe();
   }, []);
+  
 
   const login = async (email: string, password: string) => {
     try {
@@ -78,7 +109,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     } catch (error: any) {
-      console.error("Error Login: ", error.message);
+      //console.error("Error Login: ", error.message);
       setError("Correo o contraseña incorrectos");
     }
   };
@@ -113,6 +144,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await signOut(auth);
       setUser(null);
       setRole(null);
+      setEmail(""); // 🔒 Limpia el email
+
       router.replace("/");
     } catch (error) {
       console.error("Error al cerrar sesión: ", error);
