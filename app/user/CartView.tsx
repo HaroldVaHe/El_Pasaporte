@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createOrder } from "@/app/services/CRUD/ordersCRUD";
 import { router } from "expo-router";
 import {
@@ -11,9 +11,13 @@ import {
   Image, // 👈 importamos Image
 } from "react-native";
 import { useCart } from "@/context/authContext/cartContext";
+import { AuthContext } from "@/context/authContext/authContext"; // o el path correcto
+
 import { useRouter } from "expo-router";
 
+
 export default function CartView() {
+  const { user, role, currentUser, login, logout } = useContext(AuthContext)!;
   const {
     cart,
     total,
@@ -109,12 +113,32 @@ export default function CartView() {
       </View>
 
       <TouchableOpacity
-        style={styles.confirmButton}
-        onPress={async () => {
-          if (!table) {
-            Alert.alert("⚠️ Mesa no seleccionada", "Selecciona una mesa antes de confirmar el pedido.");
-            return;
-          }
+
+  style={styles.confirmButton}
+  onPress={async () => {
+    if (!table) {
+      Alert.alert("⚠️ Mesa no seleccionada", "Selecciona una mesa antes de confirmar el pedido.");
+      return;
+    }
+
+    try {
+      if (!currentUser?.uid) {
+        Alert.alert("⚠️ Usuario no autenticado", "Por favor, inicia sesión para confirmar el pedido.");
+        return;
+      }
+      const orderId = await createOrder(String(table), cart, total, currentUser.uid);
+      clearCart();
+      router.push({
+        pathname: "../user/order-summary", // Tu vista se llama 'orderId.tsx'
+        params: { orderId },  // Aquí mandas el ID recién creado
+      });    } catch (error) {
+      Alert.alert("❌ Error", "Hubo un problema al guardar tu orden. Intenta de nuevo.");
+      console.error("Error creando orden:", error);
+    }
+  }}
+>
+  <Text style={styles.confirmButtonText}>Confirmar Pedido</Text>
+</TouchableOpacity>
 
           try {
             const orderId = await createOrder(String(table), cart, total);

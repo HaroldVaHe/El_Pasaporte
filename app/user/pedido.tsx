@@ -44,7 +44,7 @@ export default function DishesList() {
     const quantity = quantities[dish.id] || 1;
     addToCart(dish, quantity);
     Alert.alert("✅ Plato añadido", `${dish.title} x${quantity}`);
-    router.push("/user/CartView");
+    //router.push("/user/CartView");
   };
 
   const changeQuantity = (id: string, delta: number) => {

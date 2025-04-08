@@ -48,6 +48,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const createOrder = (id: string) => {
+    setOrderId(id);
+  };
+
   const removeFromCart = (id: string) => {
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
@@ -74,6 +78,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         setTable,
         orderId,
         setOrderId,
+        
       }}
     >
       {children}
