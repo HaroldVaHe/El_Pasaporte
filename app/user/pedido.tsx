@@ -1,6 +1,5 @@
 // DishesList.tsx
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,7 +9,9 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  Modal,
 } from "react-native";
+import { CameraView, Camera } from "expo-camera";
 import { useRouter } from "expo-router";
 import { useDishes } from "@/context/authContext/dishesContext";
 import { useCart } from "@/context/authContext/cartContext";
@@ -31,7 +32,26 @@ export default function DishesList() {
   const { dishes } = useDishes();
   const { addToCart, setTable, table } = useCart();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [cameraVisible, setCameraVisible] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    Camera.requestCameraPermissionsAsync().then(({ status }) => {
+      setHasPermission(status === "granted");
+    });
+  }, []);
+
+  const handleBarCodeScanned = ({ data }: { data: string }) => {
+    const mesa = parseInt(data);
+    if (!isNaN(mesa)) {
+      setTable(mesa);
+      setCameraVisible(false);
+      Alert.alert("✅ Mesa seleccionada", `Mesa ${mesa}`);
+    } else {
+      Alert.alert("❌ Código inválido", "El QR no corresponde a una mesa válida.");
+    }
+  };
 
   const grouped: GroupedDishes = dishes.reduce((acc, dish) => {
     const cat = dish.category || "otros";
@@ -44,7 +64,6 @@ export default function DishesList() {
     const quantity = quantities[dish.id] || 1;
     addToCart(dish, quantity);
     Alert.alert("✅ Plato añadido", `${dish.title} x${quantity}`);
-    //router.push("/user/CartView");
   };
 
   const changeQuantity = (id: string, delta: number) => {
@@ -57,27 +76,17 @@ export default function DishesList() {
   const renderTableSelector = () => (
     <View style={styles.tableSelector}>
       <Text style={styles.sectionTitle}>Selecciona la mesa:</Text>
-      <View style={styles.tableButtons}>
-        {Array.from({ length: 10 }, (_, i) => (
-          <TouchableOpacity
-            key={i}
-            style={[
-              styles.tableButton,
-              table === i + 1 && styles.tableButtonSelected,
-            ]}
-            onPress={() => setTable(i + 1)}
-          >
-            <Text
-              style={[
-                styles.tableButtonText,
-                table === i + 1 && styles.tableButtonTextSelected,
-              ]}
-            >
-              {i + 1}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <TouchableOpacity
+        style={styles.qrButton}
+        onPress={() => setCameraVisible(true)}
+      >
+        <Text style={styles.qrButtonText}>📷 Escanear código QR</Text>
+      </TouchableOpacity>
+      {table && (
+        <Text style={{ color: "#FFF", marginTop: 10 }}>
+          Mesa actual: <Text style={{ fontWeight: "bold" }}>{table}</Text>
+        </Text>
+      )}
     </View>
   );
 
@@ -150,22 +159,38 @@ export default function DishesList() {
       >
         <Text style={styles.goToCartButtonText}>Ir al carrito</Text>
       </TouchableOpacity>
+
+      {/* Modal con cámara */}
+      <Modal visible={cameraVisible} animationType="slide">
+      <CameraView
+  style={{ flex: 1 }}
+  onBarcodeScanned={handleBarCodeScanned}
+  barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+>
+  <View style={{ flex: 1, justifyContent: "flex-end", padding: 20 }}>
+    <TouchableOpacity
+      style={{
+        backgroundColor: "#000000AA",
+        padding: 10,
+        borderRadius: 8,
+        alignItems: "center",
+      }}
+      onPress={() => setCameraVisible(false)}
+    >
+      <Text style={{ color: "#FFF" }}>Cancelar</Text>
+    </TouchableOpacity>
+  </View>
+</CameraView>
+
+      </Modal>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#1E1E2D",
-  },
-  scrollContent: {
-    paddingBottom: 60,
-  },
-  section: {
-    marginBottom: 24,
-  },
+  container: { flex: 1, padding: 16, backgroundColor: "#1E1E2D" },
+  scrollContent: { paddingBottom: 60 },
+  section: { marginBottom: 24 },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
@@ -178,30 +203,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 10,
   },
-  dishImage: {
-    width: "100%",
-    height: 180,
-    borderRadius: 10,
-    marginBottom: 8,
-  },
-  code: {
-    color: "#888",
-    fontWeight: "bold",
-  },
-  title: {
-    fontSize: 16,
-    color: "#FFF",
-    fontWeight: "bold",
-  },
-  description: {
-    color: "#CCC",
-    marginTop: 4,
-  },
-  price: {
-    color: "#90EE90",
-    marginTop: 6,
-    fontWeight: "bold",
-  },
+  dishImage: { width: "100%", height: 180, borderRadius: 10, marginBottom: 8 },
+  code: { color: "#888", fontWeight: "bold" },
+  title: { fontSize: 16, color: "#FFF", fontWeight: "bold" },
+  description: { color: "#CCC", marginTop: 4 },
+  price: { color: "#90EE90", marginTop: 6, fontWeight: "bold" },
   cartActions: {
     flexDirection: "row",
     alignItems: "center",
@@ -214,30 +220,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#444",
     borderRadius: 8,
   },
-  qtyBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  qtyBtnText: {
-    color: "#FFF",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  qtyText: {
-    color: "#FFF",
-    fontSize: 16,
-    paddingHorizontal: 8,
-  },
+  qtyBtn: { paddingHorizontal: 10, paddingVertical: 4 },
+  qtyBtnText: { color: "#FFF", fontSize: 18, fontWeight: "bold" },
+  qtyText: { color: "#FFF", fontSize: 16, paddingHorizontal: 8 },
   addButton: {
     backgroundColor: "#FFD700",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 6,
   },
-  addButtonText: {
-    color: "#000",
-    fontWeight: "bold",
-  },
+  addButtonText: { color: "#000", fontWeight: "bold" },
   goToCartButton: {
     backgroundColor: "#FFD700",
     paddingVertical: 12,
@@ -245,35 +237,13 @@ const styles = StyleSheet.create({
     marginTop: 24,
     alignItems: "center",
   },
-  goToCartButtonText: {
-    color: "#000",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  tableSelector: {
-    marginBottom: 24,
-  },
-  tableButtons: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 10,
-  },
-  tableButton: {
-    backgroundColor: "#2E2E3E",
-    padding: 10,
+  goToCartButtonText: { color: "#000", fontWeight: "bold", fontSize: 16 },
+  tableSelector: { marginBottom: 24 },
+  qrButton: {
+    backgroundColor: "#FFD700",
+    paddingVertical: 10,
     borderRadius: 8,
-    width: 40,
     alignItems: "center",
   },
-  tableButtonSelected: {
-    backgroundColor: "#FFD700",
-  },
-  tableButtonText: {
-    color: "#FFF",
-    fontWeight: "bold",
-  },
-  tableButtonTextSelected: {
-    color: "#000",
-  },
+  qrButtonText: { color: "#000", fontWeight: "bold" },
 });
