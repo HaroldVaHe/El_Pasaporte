@@ -10,7 +10,13 @@ import {
 } from "react-native";
 import { AuthContext } from "@/context/authContext/authContext";
 import { db } from "@/utils/FirebaseConfig";
-import { collection, getDocs, query, where, onSnapshot  } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
 import { useRouter } from "expo-router";
 
 interface Order {
@@ -30,24 +36,39 @@ export default function OrdersScreen() {
 
   useEffect(() => {
     if (!currentUser?.uid) return;
-  
-    const q = query(collection(db, "orders"), where("user", "==", currentUser.uid));
-  
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const ordersList: Order[] = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<Order, "id">),
-      }));
-      setOrders(ordersList);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error en tiempo real al obtener órdenes:", error);
-      setLoading(false);
-    });
-  
-    return () => unsubscribe(); // limpia el listener al desmontar
+
+    const q = query(
+      collection(db, "orders"),
+      where("user", "==", currentUser.uid),
+      orderBy("createdAt", "desc") // Ordena del más reciente al más antiguo
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const ordersList: Order[] = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as Omit<Order, "id">),
+        }));
+        setOrders(ordersList);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error en tiempo real al obtener órdenes:", error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
   }, [currentUser]);
-  
+
+  const formatDate = (timestamp: any) => {
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return new Intl.DateTimeFormat("es-CO", {
+      dateStyle: "full",
+      timeStyle: "short",
+    }).format(date);
+  };
 
   if (loading) {
     return (
@@ -56,13 +77,7 @@ export default function OrdersScreen() {
       </View>
     );
   }
-  const formatDate = (timestamp: any) => {
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return new Intl.DateTimeFormat("es-CO", {
-      dateStyle: "full",
-      timeStyle: "short",
-    }).format(date);
-  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>📜 Tus Pedidos</Text>
@@ -72,24 +87,25 @@ export default function OrdersScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() => router.push({
-              pathname: "./order-summary",
-              params: { orderId: item.id },
-            })}
+            onPress={() =>
+              router.push({
+                pathname: "./order-summary",
+                params: { orderId: item.id },
+              })
+            }
           >
             <Text style={styles.cardTitle}>🪑 Mesa: {item.table}</Text>
             <Text style={styles.cardText}>Estado: {item.status}</Text>
             <Text style={styles.cardText}>Total: ${item.total.toFixed(2)}</Text>
-            <Text style={styles.cardText}>Fecha: {formatDate(item.createdAt)}</Text>
+            <Text style={styles.cardText}>
+              Fecha: {formatDate(item.createdAt)}
+            </Text>
           </TouchableOpacity>
         )}
       />
-      <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => router.back()}
-              >
-              <Text style={styles.backButtonText}>⬅️ Volver al inicio</Text>
-            </TouchableOpacity>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Text style={styles.backButtonText}>⬅️ Volver al inicio</Text>
+      </TouchableOpacity>
     </View>
   );
 }
