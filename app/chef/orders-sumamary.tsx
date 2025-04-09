@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import { getFirestore, collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import { getFirestore, collection, query, where, getDocs, updateDoc, doc, orderBy } from "firebase/firestore";
 import { app } from "../../utils/FirebaseConfig";
 
 const db = getFirestore(app);
@@ -21,7 +21,11 @@ const OrdersSummary: React.FC = () => {
     const fetchOrders = async () => {
         try {
             const ordersRef = collection(db, "orders");
-            const q = query(ordersRef, where("status", "in", ["ordenado", "Cocinando"]));
+            const q = query(
+                ordersRef,
+                where("status", "in", ["ordenado", "Cocinando"]),
+                orderBy("createdAt", "asc")
+            );
             const querySnapshot = await getDocs(q);
             const ordersList: Order[] = querySnapshot.docs.map((doc) => ({
                 id: doc.id,
@@ -98,7 +102,8 @@ const OrdersSummary: React.FC = () => {
                             <Text style={styles.orderText}>
                                 <Text style={styles.bold}>Mesa:</Text> {item.table}{"\n"}
                                 {/* <Text style={styles.bold}>Total:</Text> ${item.total} */}
-                                <Text style={styles.bold}>Estado:</Text> {item.status}
+                                <Text style={styles.bold}>Estado:</Text> {item.status}{"\n"}
+                                <Text style={styles.bold}>Creado:</Text> {new Date(item.createdAt.seconds * 1000).toLocaleString()}
                             </Text>
                             <Text style={styles.itemsText}>
                                 <Text style={styles.bold}>Items:</Text>
@@ -108,6 +113,7 @@ const OrdersSummary: React.FC = () => {
                                     - {product.title} (x{product.quantity})
                                 </Text>
                             ))}
+                            
                             <View style={styles.buttonContainer}>
                                 <TouchableOpacity
                                     style={[styles.statusButton, { backgroundColor: "#FF9800" }]}
