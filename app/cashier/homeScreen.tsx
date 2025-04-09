@@ -1,5 +1,14 @@
 import React from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, FlatList, StatusBar } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  StatusBar,
+} from "react-native";
 import { useRouter } from "expo-router";
 
 const foodImages = [
@@ -13,52 +22,67 @@ const foodImages = [
 const HomeScreen = () => {
   const router = useRouter();
 
- return (
-      <View style={styles.container}>
-        <StatusBar barStyle="light-content" />
-  
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-    <Image
-      source={require("../../assets/images/fondoPantalla.jpg")}
-      style={styles.headerImage}
-    />
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Image
+          source={require("../../assets/images/fondoPantalla.jpg")}
+          style={styles.headerImage}
+        />
 
         <Text style={styles.title}>Bienvenido a **El Pasaporte**</Text>
 
         <Text style={styles.description}>
-          🍽️ **El Pasaporte** es mucho más que un restaurante, es una experiencia gastronómica que te 
-          transporta a diferentes rincones del mundo a través de los sabores más auténticos.  
-          
-          🌍 Con **5 estrellas Michelin**, somos el destino favorito de los amantes de la buena comida, 
-          aquellos que buscan calidad, autenticidad y un viaje culinario sin salir de su mesa.  
-
-          🏆 Cada plato ha sido elaborado con recetas originales, ingredientes frescos y técnicas 
-          tradicionales que capturan la esencia de cada cultura. 
-
-          🔥 En **El Pasaporte**, podrás disfrutar desde un **sushi artesanal japonés**, un **filete jugoso argentino**, 
-          hasta una **cremosa pasta italiana** o una **paella española perfectamente preparada**.
+          🍽️ **El Pasaporte** es mucho más que un restaurante, es una
+          experiencia gastronómica que te transporta a diferentes rincones del
+          mundo a través de los sabores más auténticos.{"\n\n"}
+          🌍 Con **5 estrellas Michelin**, somos el destino favorito de los
+          amantes de la buena comida, aquellos que buscan calidad, autenticidad
+          y un viaje culinario sin salir de su mesa.{"\n\n"}
+          🏆 Cada plato ha sido elaborado con recetas originales, ingredientes
+          frescos y técnicas tradicionales que capturan la esencia de cada
+          cultura.{"\n\n"}
+          🔥 En **El Pasaporte**, podrás disfrutar desde un **sushi artesanal
+          japonés**, un **filete jugoso argentino**, hasta una **cremosa pasta
+          italiana** o una **paella española perfectamente preparada**.
         </Text>
 
         <Text style={styles.subTitle}>🌟 Explora nuestra gastronomía</Text>
 
-     <FlatList
-           data={foodImages}
-             keyExtractor={(item) => item.id}
-             horizontal
-           showsHorizontalScrollIndicator={false}
-             renderItem={({ item }) => (
-         <View style={styles.imageCard}>
-           <Image source={item.source} style={styles.foodImage} />
-         </View>
+        <FlatList
+          data={foodImages}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={styles.imageCard}>
+              <Image source={item.source} style={styles.foodImage} />
+            </View>
           )}
         />
       </ScrollView>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push("/cashier/filterView")}>
-        <Text style={styles.buttonText}>Mirar ordenes</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push("../cashier/filterView")}
+      >
+        <Text style={styles.buttonText}>Mirar órdenes</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={() => router.push("../menu/")}>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push("../menu/")}
+      >
         <Text style={styles.buttonText}>Registrar Plato 🍽️</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push("../cashier/BillingScreen")}
+      >
+        <Text style={styles.buttonText}>Registrar Pago 💳</Text>
       </TouchableOpacity>
     </View>
   );
@@ -68,17 +92,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#15156b",
-    paddingTop: StatusBar.currentHeight || 30, // Asegura que el contenido no quede muy arriba
+    paddingTop: StatusBar.currentHeight || 30,
   },
   scrollContent: {
-    flexGrow: 1, // Permite que el contenido se expanda correctamente
+    flexGrow: 1,
     padding: 20,
     alignItems: "center",
-    justifyContent: "flex-start", // Se asegura que el contenido empiece desde arriba
+    justifyContent: "flex-start",
   },
   headerImage: {
     width: "100%",
-    height: 200, // Se ajustó la altura para que no empuje el contenido demasiado abajo
+    height: 200,
     borderRadius: 15,
     marginBottom: 20,
     resizeMode: "cover",
