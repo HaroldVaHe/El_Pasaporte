@@ -98,13 +98,25 @@ const OrdersSummary: React.FC = () => {
                     data={orders}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
-                        <View style={styles.orderItem}>
+                        <View
+                        style={[
+                          styles.orderItem,
+                          item.status === "ordenado" && { borderColor: "#FFEB3B", borderWidth: 2 },
+                        ]}
+                      >
                             <Text style={styles.orderText}>
                                 <Text style={styles.bold}>Mesa:</Text> {item.table}{"\n"}
                                 {/* <Text style={styles.bold}>Total:</Text> ${item.total} */}
                                 <Text style={styles.bold}>Estado:</Text> {item.status}{"\n"}
-                                <Text style={styles.bold}>Creado:</Text> {new Date(item.createdAt.seconds * 1000).toLocaleString()}
+                                <Text style={styles.bold}>Creado:</Text>{new Date(item.createdAt.seconds * 1000).toLocaleString("es-ES")}
+
                             </Text>
+                             {/* 🆕 Etiqueta visual para nuevas órdenes */}
+      {item.status === "ordenado" && (
+        <Text style={{ color: "#FFEB3B", fontWeight: "bold", marginTop: 5 }}>
+          🆕 Nueva orden
+        </Text>
+      )}
                             <Text style={styles.itemsText}>
                                 <Text style={styles.bold}>Items:</Text>
                             </Text>
