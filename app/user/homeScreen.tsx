@@ -1,62 +1,84 @@
 import React from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, FlatList, StatusBar } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  StatusBar,
+} from "react-native";
 import { useRouter } from "expo-router";
+import { useCart } from "@/context/authContext/cartContext"; // ✅ importá el contexto
 
 const foodImages = [
-  { id: "1", uri: "https://source.unsplash.com/400x300/?sushi,food" },
-  { id: "2", uri: "https://source.unsplash.com/400x300/?pasta,italian" },
-  { id: "3", uri: "https://source.unsplash.com/400x300/?paella,spanish" },
-  { id: "4", uri: "https://source.unsplash.com/400x300/?steak,food" },
-  { id: "5", uri: "https://source.unsplash.com/400x300/?indian,food" },
+  { id: "1", source: require("../../assets/images/sishi.png") },
+  { id: "2", source: require("../../assets/images/Pasta.png") },
+  { id: "3", source: require("../../assets/images/Paella.png") },
+  { id: "4", source: require("../../assets/images/Filete.png") },
+  { id: "5", source: require("../../assets/images/BandejaPaisa.png") },
 ];
+
+
 
 const HomeScreen = () => {
   const router = useRouter();
+  const { orderId } = useCart(); // ✅ obtené el orderId desde el contexto
 
   return (
     <View style={styles.container}>
-      {/* Ajuste dinámico para evitar que el contenido se sobreponga con la barra de estado */}
       <StatusBar barStyle="light-content" />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Image
-          source={{ uri: "https://source.unsplash.com/600x400/?restaurant,dining" }}
-          style={styles.headerImage}
-        />
+  <Image
+    source={require("../../assets/images/fondoPantalla.jpg")}
+    style={styles.headerImage}
+  />
 
-        <Text style={styles.title}>Bienvenido a **El Pasaporte**</Text>
+
+        <Text style={styles.title}>Bienvenido a El Pasaporte</Text>
 
         <Text style={styles.description}>
-          🍽️ **El Pasaporte** es mucho más que un restaurante, es una experiencia gastronómica que te 
-          transporta a diferentes rincones del mundo a través de los sabores más auténticos.  
-          
-          🌍 Con **5 estrellas Michelin**, somos el destino favorito de los amantes de la buena comida, 
-          aquellos que buscan calidad, autenticidad y un viaje culinario sin salir de su mesa.  
+          🍽️ El Pasaporte es mucho más que un restaurante, es una experiencia gastronómica que te
+          transporta a diferentes rincones del mundo a través de los sabores más auténticos.
 
-          🏆 Cada plato ha sido elaborado con recetas originales, ingredientes frescos y técnicas 
-          tradicionales que capturan la esencia de cada cultura. 
+          🌍 Con 5 estrellas Michelin, somos el destino favorito de los amantes de la buena comida,
+          aquellos que buscan calidad, autenticidad y un viaje culinario sin salir de su mesa.
 
-          🔥 En **El Pasaporte**, podrás disfrutar desde un **sushi artesanal japonés**, un **filete jugoso argentino**, 
-          hasta una **cremosa pasta italiana** o una **paella española perfectamente preparada**.
+          🏆 Cada plato ha sido elaborado con recetas originales, ingredientes frescos y técnicas
+          tradicionales que capturan la esencia de cada cultura.
+
+          🔥 En El Pasaporte, podrás disfrutar desde un sushi artesanal japonés, un filete jugoso argentino,
+          hasta una cremosa pasta italiana o una paella española perfectamente preparada.
         </Text>
 
         <Text style={styles.subTitle}>🌟 Explora nuestra gastronomía</Text>
 
         <FlatList
-          data={foodImages}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={styles.imageCard}>
-              <Image source={{ uri: item.uri }} style={styles.foodImage} />
-            </View>
-          )}
-        />
+      data={foodImages}
+        keyExtractor={(item) => item.id}
+        horizontal
+      showsHorizontalScrollIndicator={false}
+        renderItem={({ item }) => (
+    <View style={styles.imageCard}>
+      <Image source={item.source} style={styles.foodImage} />
+    </View>
+  )}
+/>
+
       </ScrollView>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push("/user/pedido")}>
+      {/* Botón para registrar pedido */}
+      <TouchableOpacity style={styles.button} onPress={() => router.push("../user/pedido")}>
         <Text style={styles.buttonText}>Registrar Pedido 🍽️</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: "#4CAF50", marginTop: 10 }]}
+        onPress={() => router.push("./ordersScreen")}
+      >
+        <Text style={styles.buttonText}>📦 Ver mis pedidos</Text>
       </TouchableOpacity>
     </View>
   );
@@ -66,17 +88,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1E1E2D",
-    paddingTop: StatusBar.currentHeight || 30, // Asegura que el contenido no quede muy arriba
+    paddingTop: StatusBar.currentHeight || 30,
   },
   scrollContent: {
-    flexGrow: 1, // Permite que el contenido se expanda correctamente
+    flexGrow: 1,
     padding: 20,
     alignItems: "center",
-    justifyContent: "flex-start", // Se asegura que el contenido empiece desde arriba
+    justifyContent: "flex-start",
   },
   headerImage: {
     width: "100%",
-    height: 200, // Se ajustó la altura para que no empuje el contenido demasiado abajo
+    height: 200,
     borderRadius: 15,
     marginBottom: 20,
     resizeMode: "cover",

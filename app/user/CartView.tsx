@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createOrder } from "@/app/services/CRUD/ordersCRUD";
+import { router } from "expo-router";
 import {
   View,
   Text,
@@ -7,17 +8,21 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Image,
 } from "react-native";
 import { useCart } from "@/context/authContext/cartContext";
+import { AuthContext } from "@/context/authContext/authContext";
+
 import { useRouter } from "expo-router";
 
 export default function CartView() {
+  const { user, role, currentUser, login, logout } = useContext(AuthContext)!;
   const {
     cart,
     total,
     addToCart,
     removeFromCart,
-    clearCart, // ✅ AÑADIDO
+    clearCart,
     table,
   } = useCart();
 
@@ -64,6 +69,14 @@ export default function CartView() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.item}>
+              {item.imageUrl && (
+                <Image
+                  source={{ uri: item.imageUrl }}
+                  style={styles.dishImage}
+                  resizeMode="cover"
+                />
+              )}
+
               <View style={styles.infoContainer}>
                 <Text style={styles.name}>{item.title}</Text>
                 <Text style={styles.details}>
@@ -107,10 +120,16 @@ export default function CartView() {
           }
 
           try {
-            await createOrder(String(table), cart, total);
-            Alert.alert("✅ Pedido confirmado", `Mesa: ${table}\nGracias por tu compra.`);
-            clearCart(); // ✅ FUNCIONA
-            router.back();
+            if (!currentUser?.uid) {
+              Alert.alert("⚠️ Usuario no autenticado", "Por favor, inicia sesión para confirmar el pedido.");
+              return;
+            }
+            const orderId = await createOrder(String(table), cart, total, currentUser.uid);
+            clearCart();
+            router.push({
+              pathname: "../user/order-summary",
+              params: { orderId },
+            });
           } catch (error) {
             Alert.alert("❌ Error", "Hubo un problema al guardar tu orden. Intenta de nuevo.");
             console.error("Error creando orden:", error);
@@ -160,8 +179,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 12,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+  },
+  dishImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
   },
   infoContainer: {
     flex: 1,
